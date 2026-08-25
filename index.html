@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <base target="_top">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Daily Operator Duty Lineup</title>
 
-  <!-- App Icon for Add to Home screen -->
-  <link rel="icon" type="image/png" href="https://asahu1902-source.github.io/duty-board/logo.png">
-  <link rel="apple-touch-icon" href="https://asahu1902-source.github.io/duty-board/logo.png">
+  <!-- Force Phone Browsers to Grab the New Red Icon -->
+  <link rel="icon" type="image/png" href="logo.png?v=3">
+  <link rel="shortcut icon" href="logo.png?v=3">
+  <link rel="apple-touch-icon" href="logo.png?v=3">
+  <link rel="apple-touch-icon-precomposed" href="logo.png?v=3">
+
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#000000">
@@ -18,308 +20,38 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     }
-
-    body {
+    html, body {
+      width: 100%;
+      height: 100%;
       background-color: #000000;
-      color: #ffffff;
+      overflow-x: hidden;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100vh;
-      padding: 10px 6px 20px 6px;
     }
 
-    /* Large R3 Logo Display */
-    .top-logo-container {
-      width: 100%;
-      max-width: 480px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 8px 0 12px 0;
-    }
-
-    .top-logo-container img {
-      width: 110px;
-      height: 110px;
-      object-fit: contain;
-      filter: drop-shadow(0 0 12px rgba(255, 45, 45, 0.6));
-    }
-
-    /* Main Board Card */
     .board-container {
       width: 100%;
-      max-width: 480px;
-      border: 3px solid #00ff00;
-      background-color: #000000;
+      max-width: 500px;
+      flex: 1;
       display: flex;
-      flex-direction: column;
-      overflow: hidden;
     }
-
-    /* Main Header Title */
-    .main-title {
-      background-color: #ff00ff;
-      color: #ffff00;
-      font-weight: 900;
-      font-size: 17px;
-      text-align: center;
-      padding: 8px 4px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-
-    /* Live Timestamp Bar */
-    .live-bar {
-      background-color: #000000;
-      color: #00ffff;
-      font-size: 11px;
-      font-weight: bold;
-      text-align: center;
-      padding: 4px 0;
-    }
-
-    .live-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      background-color: #00ff00;
-      border-radius: 50%;
-      margin-right: 4px;
-    }
-
-    /* Date Banner */
-    .date-banner {
-      background-color: #ffff00;
-      color: #0000cd;
-      font-weight: 900;
-      font-size: 16px;
-      text-align: center;
-      padding: 6px 4px;
-      border-top: 1px solid #000000;
-      border-bottom: 1px solid #000000;
-    }
-
-    /* Table Structure */
-    .duty-table {
+    iframe {
       width: 100%;
-      border-collapse: collapse;
-      text-align: center;
-    }
-
-    .table-header th {
-      background-color: #ff8c00;
-      color: #000000;
-      font-weight: 900;
-      font-size: 13px;
-      padding: 6px 4px;
-      border: 1px solid #8b0000;
-    }
-
-    .pos-col-header { width: 32%; }
-    .duty-col-header { width: 68%; }
-
-    /* Lineup Data Rows */
-    .duty-row td {
-      padding: 5px 4px;
-      font-size: 12px;
-      font-weight: bold;
-      border: 1px solid #8b0000;
-    }
-
-    .pos-cell {
-      background-color: #00ffff;
-      color: #000000;
-    }
-
-    .duty-cell {
-      background-color: #000000;
-      color: #ffffff;
-      text-align: left;
-      padding-left: 8px !important;
-    }
-
-    /* Full Notice Row */
-    .notice-cell {
-      background-color: #8b0000;
-      color: #ffff00;
-      text-align: center !important;
-      font-size: 13px;
-      font-weight: 900;
-      padding: 8px 4px !important;
-      letter-spacing: 0.5px;
-    }
-
-    /* Summary Section */
-    .summary-grid {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .summary-grid td {
-      border: 1px solid #8b0000;
-      padding: 5px 4px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .label-cell {
-      background-color: #00ffff;
-      color: #000000;
-      text-align: center;
-      width: 32%;
-    }
-
-    .value-cell {
-      background-color: #000000;
-      color: #ffffff;
-      text-align: left;
-      padding-left: 8px !important;
-    }
-
-    .count-cell {
-      background-color: #000000;
-      color: #ffffff;
-      text-align: center;
-      font-size: 13px;
-    }
-
-    /* Bottom Rolling Marquee */
-    .marquee-container {
-      background-color: #000000;
-      color: #ffff00;
-      font-weight: 900;
-      font-size: 13px;
-      padding: 6px 0;
-      border-top: 1px solid #8b0000;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-
-    .marquee-text {
-      display: inline-block;
-      animation: marquee 12s linear infinite;
-    }
-
-    @keyframes marquee {
-      0%   { transform: translateX(100%); }
-      100% { transform: translateX(-100%); }
-    }
-
-    #loading {
-      text-align: center;
-      padding: 30px 10px;
-      font-weight: bold;
-      color: #00ffff;
-      font-size: 14px;
+      height: 100%;
+      min-height: 100vh;
+      border: none;
+      display: block;
     }
   </style>
 </head>
 <body>
 
-  <!-- Large Red R3 Header Logo -->
-  <div class="top-logo-container">
-    <img src="https://asahu1902-source.github.io/duty-board/logo.png" alt="Relay 3 Logo">
-  </div>
-
-  <!-- Main Board Structure -->
   <div class="board-container">
-    <div id="mainTitle" class="main-title">DAILY OPERATOR DUTY LINEUP</div>
-    <div id="liveBar" class="live-bar">
-      <span class="live-dot"></span><span id="refreshedTime">LOADING LIVE DATA...</span>
-    </div>
-    <div id="dateBanner" class="date-banner">-</div>
-
-    <div id="loading">⚡ Fetching live duty assignments...</div>
-
-    <table id="lineupTable" class="duty-table" style="display: none;">
-      <thead>
-        <tr class="table-header">
-          <th class="pos-col-header">Position</th>
-          <th class="duty-col-header">Duty Assignment & Last History</th>
-        </tr>
-      </thead>
-      <tbody id="lineupBody"></tbody>
-    </table>
-
-    <table id="summaryTable" class="summary-grid" style="display: none;">
-      <tr>
-        <td class="label-cell">Available</td>
-        <td id="availableVal" class="count-cell" style="width: 20%;">0</td>
-        <td class="label-cell" style="width: 24%;">Stand By</td>
-        <td id="standbyVal" class="count-cell" style="width: 24%;">-</td>
-      </tr>
-      <tr>
-        <td class="label-cell">OFF Day</td>
-        <td id="offDayVal" colspan="3" class="value-cell">-</td>
-      </tr>
-      <tr>
-        <td class="label-cell">Leave</td>
-        <td id="leaveVal" colspan="3" class="value-cell">-</td>
-      </tr>
-      <tr>
-        <td class="label-cell">Rtn</td>
-        <td id="rtnVal" colspan="3" class="value-cell">-</td>
-      </tr>
-    </table>
-
-    <div class="marquee-container">
-      <div class="marquee-text">✦ WELCOME RELAY - 3 ✦ HAVE A SAFE AND PRODUCTIVE SHIFT ✦</div>
-    </div>
+    <iframe src="https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqIpg1dFGIHPP/exec"></iframe>
   </div>
 
-  <script>
-    function renderBoard(data) {
-      if (!data) return;
-
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('lineupTable').style.display = 'table';
-      document.getElementById('summaryTable').style.display = 'table';
-
-      document.getElementById('mainTitle').innerText = data.mainTitle;
-      document.getElementById('refreshedTime').innerText = "LIVE | " + data.refreshed;
-      document.getElementById('dateBanner').innerText = data.dateBanner;
-
-      var body = document.getElementById('lineupBody');
-      body.innerHTML = '';
-
-      if (data.rows && data.rows.length > 0) {
-        data.rows.forEach(function(row) {
-          var tr = document.createElement('tr');
-          tr.className = 'duty-row';
-
-          if (row.isNotice) {
-            tr.innerHTML = '<td colspan="2" class="notice-cell">' + row.duty + '</td>';
-          } else {
-            tr.innerHTML = '<td class="pos-cell">' + row.pos + '</td>' +
-                           '<td class="duty-cell">' + row.duty + '</td>';
-          }
-          body.appendChild(tr);
-        });
-      }
-
-      document.getElementById('availableVal').innerText = data.availableCount || '0';
-      document.getElementById('standbyVal').innerText = data.standBy || '-';
-      document.getElementById('offDayVal').innerText = data.offDay || 'None';
-      document.getElementById('leaveVal').innerText = data.leave || 'None';
-      document.getElementById('rtnVal').innerText = data.rtn || '-';
-    }
-
-    function fetchLineup() {
-      google.script.run
-        .withSuccessHandler(renderBoard)
-        .withFailureHandler(function(err) {
-          document.getElementById('loading').innerText = 'Syncing error. Retrying...';
-        })
-        .getLineupData();
-    }
-
-    window.onload = function() {
-      fetchLineup();
-      setInterval(fetchLineup, 30000);
-    };
-  </script>
 </body>
 </html>
