@@ -34,6 +34,28 @@
       align-items: center;
       touch-action: manipulation;
     }
+    #install-banner {
+      display: none;
+      width: 100%;
+      max-width: 900px;
+      background: #0b1b3d;
+      color: #ffffff;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #f59e0b;
+    }
+    #install-btn {
+      background: #dc2626;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
     .board-container {
       width: 100%;
       max-width: 900px;
@@ -52,6 +74,11 @@
 </head>
 <body>
 
+  <div id="install-banner" style="display: none;">
+    <span>Install Duty Lineup App</span>
+    <button id="install-btn">INSTALL</button>
+  </div>
+
   <div class="board-container">
     <iframe src="https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqIpg1dFGIHPP/exec"></iframe>
   </div>
@@ -60,6 +87,31 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
     }
+
+    let deferredPrompt;
+    const installBanner = document.getElementById('install-banner');
+    const installBtn = document.getElementById('install-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBanner.style.display = 'flex';
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          installBanner.style.display = 'none';
+        }
+        deferredPrompt = null;
+      }
+    });
+
+    window.addEventListener('appinstalled', () => {
+      installBanner.style.display = 'none';
+    });
   </script>
 </body>
 </html>
