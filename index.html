@@ -4,23 +4,73 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Daily Operator Duty Lineup</title>
+
+  <!-- App Icon for Add to Home Screen -->
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000000">
+
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     html, body {
       width: 100%;
       height: 100%;
       background-color: #000000;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Top Logo Display */
+    .header-bar {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px 0 6px 0;
+      background-color: #000000;
+    }
+    .header-bar img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+
+    /* Duty Board Lineup Frame */
+    .board-container {
+      width: 100%;
+      max-width: 480px;
+      flex: 1;
+      display: flex;
     }
     iframe {
       width: 100%;
       height: 100%;
+      min-height: 85vh;
       border: none;
       display: block;
     }
   </style>
 </head>
 <body>
-  <iframe src="https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqIpg1dFGIHPP/exec"></iframe>
+
+  <div class="header-bar">
+    <img src="logo.png" alt="R3 Logo">
+  </div>
+
+  <div class="board-container">
+    <iframe src="https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqIpg1dFGIHPP/exec"></iframe>
+  </div>
+
 </body>
 </html>
