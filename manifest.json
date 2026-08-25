@@ -1,16 +1,21 @@
 {
   "name": "Live Duty Lineup Board",
   "short_name": "Duty Lineup",
-  "start_url": "./",
+  "start_url": "/duty-board/",
+  "scope": "/duty-board/",
   "display": "standalone",
   "background_color": "#0b1b3d",
   "theme_color": "#0b1b3d",
   "icons": [
     {
-      "src": "logo.svg",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ]
 }
