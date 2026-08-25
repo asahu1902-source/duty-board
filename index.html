@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <title>Daily Operator Duty Lineup</title>
+  <title>Live Duty Lineup Board</title>
 
-  <!-- Red R3 App Icon for Add to Home Screen -->
+  <!-- Web App Manifest for Install Popup -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Logo Icons -->
   <link rel="icon" type="image/png" href="logo.png">
-  <link rel="shortcut icon" href="logo.png">
+  <link rel="shortcut icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
   <link rel="apple-touch-icon-precomposed" href="logo.png">
 
@@ -35,7 +38,7 @@
     }
     .board-container {
       width: 100%;
-      max-width: 500px;
+      max-width: 900px;
       height: 100%;
       flex: 1;
       display: flex;
