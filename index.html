@@ -5,18 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>R3 Operator Duty Portal</title>
   
-  <!-- FIX WORLD ICON: DIRECT FAVICON LINKS -->
+  <!-- FAVICON ICONS -->
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="shortcut icon" type="image/png" href="icon.png">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#060d1d">
 
-  <!-- html2pdf for Direct PDF Export -->
+  <!-- PDF EXPORT SCRIPT -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <script>
-    // YOUR LIVE APPS SCRIPT URL
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqlpg1dFGIHPP/exec';
     const GITHUB_PORTAL_URL = 'https://asahu1902-source.github.io/duty-board/';
   </script>
@@ -140,7 +139,7 @@
     .pass-field-value { font-size: 16px; font-weight: 900; color: #ffffff; word-break: break-word; }
     .pass-field-highlight { color: #facc15; font-size: 20px; }
 
-    /* MODERN SVG ACTION BUTTONS */
+    /* ACTION BUTTONS WITH SVG ICONS */
     .pass-actions { display: flex; gap: 10px; }
     .btn-action {
       flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -162,7 +161,7 @@
     .supervisor-toggle { text-align: center; margin-top: 10px; }
     .supervisor-link { color: #64748b; font-size: 11px; text-decoration: underline; cursor: pointer; font-weight: 700; }
 
-    /* ALL OPERATOR TABLE */
+    /* FULL TEAM TABLE (SUPERVISOR) */
     #allOperatorsTableWrapper { display: none; margin-top: 16px; border: 2px solid #facc15; border-radius: 8px; overflow: hidden; }
     .all-table { width: 100%; border-collapse: collapse; font-size: 11px; }
     .all-table th { background: #facc15; color: #000; padding: 6px; font-weight: 900; text-align: center; }
@@ -253,7 +252,7 @@
     <div class="operator-bar">
       <label for="loggedOperatorSelect">👤 Select Name:</label>
       <select id="loggedOperatorSelect" class="operator-select" onchange="onOperatorChanged()">
-        <option value="">-- Choose Operator --</option>
+        <option value="">-- Loading Operators... --</option>
       </select>
     </div>
 
@@ -424,29 +423,13 @@
 
     document.getElementById('installActionBtn').addEventListener('click', openInstallModal);
 
-    // --- HYBRID DATA FETCHER (Direct Fetch + JSONP Fallback) ---
+    // --- BULLETPROOF HYBRID FETCHER ---
     function fetchLiveData() {
       const splash = document.getElementById('splashScreen');
       splash.style.display = 'flex';
       splash.style.opacity = '1';
 
-      // 1. Try modern Fetch API first
-      fetch(APPS_SCRIPT_URL)
-        .then(response => {
-          if (!response.ok) throw new Error('HTTP status ' + response.status);
-          return response.json();
-        })
-        .then(data => {
-          processReceivedData(data);
-        })
-        .catch(() => {
-          // 2. Seamless Fallback to JSONP if browser enforces strict CORS
-          loadViaJSONP();
-        });
-    }
-
-    function loadViaJSONP() {
-      const splash = document.getElementById('splashScreen');
+      // 1. JSONP Loader (Directly reads the payload from your screenshot)
       window.handleRosterResponse = function(data) {
         processReceivedData(data);
       };
@@ -457,10 +440,18 @@
       const script = document.createElement('script');
       script.id = 'jsonpLoaderScript';
       script.src = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf('?') > -1 ? '&' : '?') + 'callback=handleRosterResponse&t=' + Date.now();
+      
       script.onerror = function() {
-        splash.style.display = 'none';
-        alert('Could not sync data. Ensure Apps Script deployment access is set to "Anyone".');
+        // 2. Fetch with Follow-Redirects if JSONP is blocked by browser shield
+        fetch(APPS_SCRIPT_URL, { method: 'GET', redirect: 'follow' })
+          .then(res => res.json())
+          .then(data => processReceivedData(data))
+          .catch(err => {
+            splash.style.display = 'none';
+            alert('Could not synchronize: please disable ad-blocker or brave shield for duty-board.');
+          });
       };
+
       document.body.appendChild(script);
     }
 
@@ -566,7 +557,7 @@
             setDutyCard(
               r.pos,
               parts[1] || "-",
-              parts[4] || "B",
+              parts[4] || "A",
               parts[2] || "-",
               parts[3] || "-",
               "Assigned regular duty."
@@ -578,7 +569,7 @@
       }
 
       if (!dutyFound) {
-        setDutyCard("GENERAL / RELIEVER", "-", "B", "-", "-", "No active position restriction.");
+        setDutyCard("GENERAL / RELIEVER", "-", "A", "-", "-", "No active position restriction.");
       }
 
       document.getElementById('repName').innerText = selectedOp;
