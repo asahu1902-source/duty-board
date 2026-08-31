@@ -397,37 +397,32 @@
 
     document.getElementById('installActionBtn').addEventListener('click', openInstallModal);
 
-    // NATIVE FETCH WITH REDIRECT & TEXT PARSER
+    // DIRECT JSONP RETRIEVAL: BYPASSES ALL CORS & REDIRECT ISSUES
     function fetchLiveData() {
       const splash = document.getElementById('splashScreen');
       splash.style.display = 'flex';
       splash.style.opacity = '1';
 
-      fetch(APPS_SCRIPT_URL, {
-        method: 'GET',
-        redirect: 'follow'
-      })
-      .then(res => res.text())
-      .then(text => {
-        let cleanText = text.trim();
-        // Unwrap handleRosterResponse(...) if returned by Apps Script JSONP
-        if (cleanText.startsWith('handleRosterResponse(') && cleanText.endsWith(');')) {
-          cleanText = cleanText.substring(21, cleanText.length - 2);
-        } else if (cleanText.startsWith('handleRosterResponse(') && cleanText.endsWith(')')) {
-          cleanText = cleanText.substring(21, cleanText.length - 1);
-        }
-        const data = JSON.parse(cleanText);
+      window.handleRosterResponse = function(data) {
         globalData = data;
         hydrateApp(data);
         setTimeout(() => {
           splash.style.opacity = '0';
           setTimeout(() => splash.style.display = 'none', 450);
-        }, 500);
-      })
-      .catch(err => {
+        }, 400);
+      };
+
+      const old = document.getElementById('jsonpCall');
+      if (old) old.remove();
+
+      const s = document.createElement('script');
+      s.id = 'jsonpCall';
+      s.src = APPS_SCRIPT_URL + '?callback=handleRosterResponse&t=' + Date.now();
+      s.onerror = function() {
         splash.style.display = 'none';
-        alert('Network connection error: ' + err.message);
-      });
+        alert('Data sync failed. Please check internet connection.');
+      };
+      document.head.appendChild(s);
     }
 
     function hydrateApp(data) {
