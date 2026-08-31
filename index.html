@@ -300,7 +300,15 @@
       border-radius: 8px;
       border: 1.5px solid #facc15;
       text-transform: uppercase;
+      letter-spacing: 0.8px;
+      box-shadow: 0 0 12px rgba(250, 204, 21, 0.45);
+      animation: masterPulse 1.8s ease-in-out infinite alternate;
       display: none;
+    }
+
+    @keyframes masterPulse {
+      0%   { transform: scale(1); box-shadow: 0 0 8px rgba(250, 204, 21, 0.4); }
+      100% { transform: scale(1.02); box-shadow: 0 0 16px rgba(250, 204, 21, 0.9); }
     }
 
     .holiday-cluster-wrapper {
@@ -331,6 +339,7 @@
       border: 1px solid #ef4444;
     }
 
+    /* PULSING COUNTDOWN BADGE */
     .animated-countdown-badge {
       background-color: #facc15;
       color: #000000;
@@ -338,6 +347,17 @@
       border-radius: 16px;
       font-size: 13px;
       font-weight: 900;
+      box-shadow: 0 0 12px rgba(250, 204, 21, 0.9);
+      animation: badgePulse 1.2s infinite ease-in-out;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+      display: inline-block;
+    }
+
+    @keyframes badgePulse {
+      0%   { transform: scale(1); box-shadow: 0 0 6px rgba(250, 204, 21, 0.6); }
+      50%  { transform: scale(1.15); box-shadow: 0 0 20px rgba(250, 204, 21, 1); }
+      100% { transform: scale(1); box-shadow: 0 0 6px rgba(250, 204, 21, 0.6); }
     }
 
     .relay-cards-grid {
@@ -496,7 +516,7 @@
       splash.style.display = 'flex';
       splash.style.opacity = '1';
 
-      // Clean up previous script element
+      // Clean up previous script tag
       const old = document.getElementById('jsonpLoader');
       if (old) old.remove();
 
@@ -504,7 +524,7 @@
       const s = document.createElement('script');
       s.id = 'jsonpLoader';
       s.src = SCRIPT_URL + '?callback=handleDutyData&t=' + Date.now();
-      document.body.appendChild(s);
+      document.head.appendChild(s);
     }
 
     function shareToWhatsApp() {
