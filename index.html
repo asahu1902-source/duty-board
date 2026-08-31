@@ -59,7 +59,7 @@
       height: 150px;
       border-radius: 50%;
       border: 3.5px dashed #facc15;
-      animation: spinRing 3s linear infinite;
+      animation: spinRing 2.5s linear infinite;
     }
 
     .splash-app-icon {
@@ -380,7 +380,7 @@
     <div class="splash-load-text">⚡ Synchronizing Duty Lineup...</div>
   </div>
 
-  <!-- Direct Native Roster Board (No Google Banner) -->
+  <!-- Board Roster Display -->
   <div class="board-container">
     <div class="main-title" id="uiMainTitle">DAILY OPERATOR DUTY LINEUP</div>
     
@@ -419,92 +419,90 @@
   <div id="companyHolidayHeader" class="company-holiday-master-header">🎉 COMPANY NEXT HOLIDAY</div>
   <div class="holiday-cluster-wrapper" id="holidayClusterWrapper"></div>
 
-  <textarea id="uiWhatsAppPayload" style="display:none;"></textarea>
-
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqIpg1dFGIHPP/exec";
     let globalWhatsAppText = "";
 
-    function loadSheetData() {
+    async function loadSheetData() {
       const splash = document.getElementById('splashScreen');
       splash.style.display = 'flex';
       splash.style.opacity = '1';
 
-      // JSONP callback function
-      window.handleDutyData = function(data) {
-        if (!data) return;
-
-        document.getElementById('uiMainTitle').innerText = data.mainTitle || 'DAILY OPERATOR DUTY LINEUP';
-        document.getElementById('uiRefreshed').innerText = 'LIVE | ' + (data.refreshed || '');
-        document.getElementById('uiDateBanner').innerText = data.dateBanner || '-';
-        globalWhatsAppText = data.whatsappText || '';
-
-        let tbodyHtml = '';
-        (data.rows || []).forEach(r => {
-          if (r.isNotice) {
-            tbodyHtml += `<tr><td colspan="6" class="notice-cell">${r.duty}</td></tr>`;
-          } else {
-            const parts = (r.duty || "").split("-").map(s => s.trim());
-            tbodyHtml += `<tr>
-              <td class="cyan-label-cell">${r.pos || ''}</td>
-              <td class="name-cell">${parts[0] || '-'}</td>
-              <td class="due-cell">${parts[1] || '-'}</td>
-              <td class="date-cell">${parts[2] || '-'}</td>
-              <td class="day-cell">${parts[3] || '-'}</td>
-              <td class="shift-cell">${parts[4] || '-'}</td>
-            </tr>`;
-          }
+      try {
+        const response = await fetch(SCRIPT_URL + '?t=' + Date.now(), {
+          method: 'GET',
+          redirect: 'follow'
         });
-
-        tbodyHtml += `
-          <tr><td class="cyan-label-cell">Available</td><td class="summary-center-cell">${data.availableCount || '0'}</td><td colspan="2" class="cyan-label-cell">Stand By</td><td colspan="2" class="summary-center-cell">${data.standBy || '-'}</td></tr>
-          <tr><td class="cyan-label-cell">OFF Day</td><td colspan="5" class="summary-val-cell">${data.offDay || 'None'}</td></tr>
-          <tr><td class="cyan-label-cell">Leave</td><td colspan="5" class="summary-val-cell">${data.leave || 'None'}</td></tr>
-          <tr><td class="cyan-label-cell">Info</td><td colspan="5" class="summary-val-cell">${data.info || '-'}</td></tr>
-        `;
-        document.getElementById('uiTableBody').innerHTML = tbodyHtml;
-
-        const holHeader = document.getElementById('companyHolidayHeader');
-        const holWrapper = document.getElementById('holidayClusterWrapper');
-
-        if (data.holidayCluster && data.holidayCluster.length > 0) {
-          holHeader.style.display = 'block';
-          let hHtml = '';
-          data.holidayCluster.forEach(h => {
-            hHtml += `
-              <div class="holiday-single-card">
-                <div class="holiday-header-strip">
-                  <div style="font-size:12px; font-weight:900;">🎈 <strong>${h.name}</strong> (${h.date} - ${h.day})</div>
-                  <div class="animated-countdown-badge">${h.daysToGo}</div>
-                </div>
-                <div class="relay-cards-grid">
-                  <div class="relay-single-box"><div class="relay-title">R3 Group</div><div class="shift-letter-val">${h.r3}</div></div>
-                  <div class="relay-single-box"><div class="relay-title">R2 Group</div><div class="shift-letter-val">${h.r2}</div></div>
-                  <div class="relay-single-box"><div class="relay-title">R1 Group</div><div class="shift-letter-val">${h.r1}</div></div>
-                </div>
-              </div>`;
-          });
-          holWrapper.innerHTML = hHtml;
-        } else {
-          holHeader.style.display = 'none';
-          holWrapper.innerHTML = '';
-        }
-
-        // Hide splash screen cleanly
+        const data = await response.json();
+        renderBoard(data);
+      } catch (err) {
+        console.error("Fetch failed", err);
+      } finally {
         setTimeout(() => {
           splash.style.opacity = '0';
-          setTimeout(() => splash.style.display = 'none', 400);
-        }, 300);
-      };
+          setTimeout(() => { splash.style.display = 'none'; }, 400);
+        }, 500);
+      }
+    }
 
-      // Load background script cleanly
-      const oldScript = document.getElementById('jsonpSync');
-      if (oldScript) oldScript.remove();
+    function renderBoard(data) {
+      if (!data) return;
 
-      const script = document.createElement('script');
-      script.id = 'jsonpSync';
-      script.src = SCRIPT_URL + '?callback=handleDutyData&t=' + Date.now();
-      document.body.appendChild(script);
+      document.getElementById('uiMainTitle').innerText = data.mainTitle || 'DAILY OPERATOR DUTY LINEUP';
+      document.getElementById('uiRefreshed').innerText = 'LIVE | ' + (data.refreshed || '');
+      document.getElementById('uiDateBanner').innerText = data.dateBanner || '-';
+      globalWhatsAppText = data.whatsappText || '';
+
+      let tbodyHtml = '';
+      (data.rows || []).forEach(r => {
+        if (r.isNotice) {
+          tbodyHtml += `<tr><td colspan="6" class="notice-cell">${r.duty}</td></tr>`;
+        } else {
+          const parts = (r.duty || "").split("-").map(s => s.trim());
+          tbodyHtml += `<tr>
+            <td class="cyan-label-cell">${r.pos || ''}</td>
+            <td class="name-cell">${parts[0] || '-'}</td>
+            <td class="due-cell">${parts[1] || '-'}</td>
+            <td class="date-cell">${parts[2] || '-'}</td>
+            <td class="day-cell">${parts[3] || '-'}</td>
+            <td class="shift-cell">${parts[4] || '-'}</td>
+          </tr>`;
+        }
+      });
+
+      tbodyHtml += `
+        <tr><td class="cyan-label-cell">Available</td><td class="summary-center-cell">${data.availableCount || '0'}</td><td colspan="2" class="cyan-label-cell">Stand By</td><td colspan="2" class="summary-center-cell">${data.standBy || '-'}</td></tr>
+        <tr><td class="cyan-label-cell">OFF Day</td><td colspan="5" class="summary-val-cell">${data.offDay || 'None'}</td></tr>
+        <tr><td class="cyan-label-cell">Leave</td><td colspan="5" class="summary-val-cell">${data.leave || 'None'}</td></tr>
+        <tr><td class="cyan-label-cell">Info</td><td colspan="5" class="summary-val-cell">${data.info || '-'}</td></tr>
+      `;
+      document.getElementById('uiTableBody').innerHTML = tbodyHtml;
+
+      const holHeader = document.getElementById('companyHolidayHeader');
+      const holWrapper = document.getElementById('holidayClusterWrapper');
+
+      if (data.holidayCluster && data.holidayCluster.length > 0) {
+        holHeader.style.display = 'block';
+        let hHtml = '';
+        data.holidayCluster.forEach(h => {
+          hHtml += `
+            <div class="holiday-single-card">
+              <div class="holiday-header-strip">
+                <div style="font-size:12px; font-weight:900;">🎈 <strong>${h.name}</strong> (${h.date} - ${h.day})</div>
+                <div class="animated-countdown-badge">${h.daysToGo}</div>
+              </div>
+              <div class="relay-cards-grid">
+                <div class="relay-single-box"><div class="relay-title">R3 Group</div><div class="shift-letter-val">${h.r3}</div></div>
+                <div class="relay-single-box"><div class="relay-title">R2 Group</div><div class="shift-letter-val">${h.r2}</div></div>
+                <div class="relay-single-box"><div class="relay-title">R1 Group</div><div class="shift-letter-val">${h.r1}</div></div>
+              </div>
+            </div>`;
+        });
+        holWrapper.innerHTML = hHtml;
+      } else {
+        holHeader.style.display = 'none';
+        holWrapper.innerHTML = '';
+      }
     }
 
     function shareToWhatsApp() {
