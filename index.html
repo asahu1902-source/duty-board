@@ -417,25 +417,34 @@
 
     document.getElementById('installActionBtn').addEventListener('click', openInstallModal);
 
+    // --- JSONP DATA LOADER (BYPASSES BROWSER CORS RESTRICTION) ---
     function fetchLiveData() {
       const splash = document.getElementById('splashScreen');
       splash.style.display = 'flex';
       splash.style.opacity = '1';
 
-      fetch(APPS_SCRIPT_URL)
-        .then(r => r.json())
-        .then(data => {
-          globalData = data;
-          hydrateApp(data);
-          setTimeout(() => {
-            splash.style.opacity = '0';
-            setTimeout(() => splash.style.display = 'none', 450);
-          }, 700);
-        })
-        .catch(err => {
-          splash.style.display = 'none';
-          alert('Network issue: could not synchronize roster data.');
-        });
+      // Define global JSONP callback
+      window.handleRosterResponse = function(data) {
+        globalData = data;
+        hydrateApp(data);
+        setTimeout(() => {
+          splash.style.opacity = '0';
+          setTimeout(() => splash.style.display = 'none', 450);
+        }, 600);
+      };
+
+      // Inject script tag for JSONP
+      const existingScript = document.getElementById('jsonpLoaderScript');
+      if (existingScript) existingScript.remove();
+
+      const script = document.createElement('script');
+      script.id = 'jsonpLoaderScript';
+      script.src = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf('?') > -1 ? '&' : '?') + 'callback=handleRosterResponse&t=' + Date.now();
+      script.onerror = function() {
+        splash.style.display = 'none';
+        alert('Network issue: could not synchronize roster data.');
+      };
+      document.body.appendChild(script);
     }
 
     function hydrateApp(data) {
