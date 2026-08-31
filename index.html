@@ -3,651 +3,231 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <title>R3 Operator Duty Portal</title>
+  <title>R3 Operator Duty Lineup</title>
   
   <link rel="icon" type="image/png" href="icon.png">
-  <link rel="shortcut icon" type="image/png" href="icon.png">
-  <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#060d1d">
+  <meta name="theme-color" content="#000000">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <script>
+    // YOUR GOOGLE APPS SCRIPT WEB APP URL
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqlpg1dFGIHPP/exec';
-    const GITHUB_PORTAL_URL = 'https://asahu1902-source.github.io/duty-board/';
   </script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-    body { background-color: #060d1d; color: #ffffff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 75px; }
+    body { background-color: #000000; color: #ffffff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 8px 6px 30px 6px; }
 
-    #splashScreen {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background-color: #060d1d; z-index: 100000;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      transition: opacity 0.5s ease-out;
+    #syncOverlay {
+      display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(6px); z-index: 99999;
+      flex-direction: column; align-items: center; justify-content: center; gap: 18px;
     }
-    .splash-logo-wrap {
-      width: 190px; height: 190px; border-radius: 50%;
-      border: 4px solid #facc15; display: flex; align-items: center; justify-content: center;
-      background: radial-gradient(circle, #0b1e42 0%, #060d1d 90%);
-      box-shadow: 0 0 35px rgba(250, 204, 21, 0.4);
-      position: relative; margin-bottom: 25px;
+    .spinner-ring {
+      width: 56px; height: 56px; border: 5px solid #1f2937;
+      border-top: 5px solid #00ff00; border-right: 5px solid #00ffff; border-bottom: 5px solid #ffff00;
+      border-radius: 50%; box-shadow: 0 0 16px rgba(0, 255, 0, 0.7);
+      animation: spinRing 0.8s linear infinite;
     }
-    .splash-house {
-      width: 120px; height: 120px; border: 4px solid #ef4444; border-radius: 8px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;
-    }
-    .splash-r3 { font-size: 42px; font-weight: 900; letter-spacing: -2px; }
-    .splash-r3 span:first-child { color: #ef4444; }
-    .splash-r3 span:last-child { color: #facc15; }
-    .splash-tag {
-      position: absolute; bottom: -12px; background: #ef4444; color: #ffffff;
-      font-size: 9px; font-weight: 900; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px;
-    }
-    .splash-pulse-ring {
-      position: absolute; width: 210px; height: 210px; border-radius: 50%;
-      border: 2px dashed #00ffff; animation: spin 8s linear infinite;
-    }
-    .splash-load-text {
-      color: #00ffff; font-size: 14px; font-weight: 800; letter-spacing: 0.8px;
-      text-transform: uppercase; animation: pulseText 1s ease-in-out infinite alternate;
-    }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    @keyframes pulseText { 0% { opacity: 0.4; } 100% { opacity: 1; } }
+    @keyframes spinRing { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .sync-text { color: #00ffff; font-size: 15px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
 
-    #installModal {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); z-index: 100001;
-      align-items: center; justify-content: center; padding: 20px;
-    }
-    .modal-box {
-      background: #0f172a; border: 2px solid #38bdf8; border-radius: 16px;
-      padding: 24px 20px; width: 100%; max-width: 360px; text-align: center;
-      box-shadow: 0 0 30px rgba(56, 189, 248, 0.4);
-    }
-    .modal-title { font-size: 18px; font-weight: 900; color: #38bdf8; margin-bottom: 8px; }
-    .modal-desc { font-size: 12px; color: #cbd5e1; margin-bottom: 18px; line-height: 1.4; }
-    .progress-track {
-      width: 100%; height: 14px; background: #1e293b; border-radius: 10px;
-      overflow: hidden; border: 1px solid #475569; margin-bottom: 8px;
-    }
-    .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #22c55e); transition: width 0.2s linear; }
-    .progress-pct { font-size: 15px; font-weight: 900; color: #22c55e; margin-bottom: 16px; }
-    .modal-btn-install {
-      background: #0284c7; color: #fff; font-size: 14px; font-weight: 800;
-      padding: 10px 24px; border-radius: 8px; border: none; cursor: pointer; width: 100%;
-    }
-    .manual-guide {
-      display: none; font-size: 11px; color: #facc15; background: rgba(250, 204, 21, 0.1);
-      padding: 8px; border-radius: 6px; border: 1px dashed #facc15; margin-top: 10px; text-align: left;
-    }
+    .board-container { width: 100%; max-width: 480px; border: 3px solid #00ff00; background-color: #000000; display: flex; flex-direction: column; }
+    .main-title { background-color: #ff00ff; color: #ffff00; font-weight: 900; font-size: 16px; text-align: center; padding: 8px 4px; text-transform: uppercase; }
+    .live-bar { background-color: #000000; color: #00ffff; font-size: 11px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; }
+    .live-dot { display: inline-block; width: 8px; height: 8px; background-color: #00ff00; border-radius: 50%; margin-right: 5px; box-shadow: 0 0 6px #00ff00; }
+    .refresh-btn { background: #000000; color: #00ffff; border: 1px solid #00ffff; border-radius: 4px; font-size: 10px; font-weight: 900; padding: 3px 7px; cursor: pointer; }
+    .whatsapp-btn { background: #25D366; color: #000000; border: 1px solid #25D366; border-radius: 4px; font-size: 10px; font-weight: 900; padding: 3px 8px; cursor: pointer; }
 
-    .top-header-bar {
-      width: 100%; max-width: 480px; background: #0b1329; border-bottom: 2px solid #1e293b;
-      padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50;
-    }
-    .brand-mark { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 13px; color: #facc15; }
-    .top-actions { display: flex; align-items: center; gap: 6px; }
-    .pwa-badge {
-      background: #0284c7; color: #ffffff; border: none; border-radius: 6px;
-      font-size: 10px; font-weight: 900; padding: 5px 8px; cursor: pointer;
-    }
+    .date-banner { background-color: #ffff00; color: #0000cd; font-weight: 900; font-size: 15px; text-align: center; padding: 6px 4px; }
+    .master-board-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .master-board-table th { background-color: #ff8c00; color: #000000; font-weight: 900; font-size: 11px; padding: 6px 2px; border: 1px solid #8b0000; text-align: center; }
+    .master-board-table td { border: 1px solid #8b0000; padding: 5px 2px; font-size: 11px; font-weight: bold; text-align: center; }
+    .cyan-label-cell { background-color: #00ffff !important; color: #000000 !important; font-weight: 900 !important; }
+    .name-cell { background-color: #000000; color: #ffffff; text-align: left !important; padding-left: 6px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .due-cell { background-color: #000000; color: #ffff00; }
+    .date-cell { background-color: #000000; color: #ffffff; font-size: 10px; }
+    .day-cell { background-color: #000000; color: #38bdf8; }
+    .shift-cell { background-color: #000000; color: #00ff00; font-weight: 900; }
+    .summary-val-cell { background-color: #000000; color: #ffffff; text-align: left !important; padding-left: 8px !important; }
+    .summary-center-cell { background-color: #000000; color: #ffffff; text-align: center !important; }
+    .notice-cell { background-color: #8b0000; color: #ffff00; font-size: 13px; font-weight: 900; padding: 8px 4px !important; }
 
-    .app-viewport { width: 100%; max-width: 480px; padding: 12px 8px; }
-    .view-panel { display: none; }
-    .view-panel.active { display: block; }
+    .marquee-container { background-color: #000000; color: #ffff00; font-weight: 900; font-size: 12px; padding: 6px 0; border-top: 1px solid #8b0000; overflow: hidden; white-space: nowrap; }
+    .marquee-text { display: inline-block; animation: marquee 12s linear infinite; }
+    @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-    .operator-bar {
-      background: #0f172a; border: 2px solid #38bdf8; border-radius: 10px;
-      padding: 10px 12px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    .company-holiday-master-header {
+      width: 100%; max-width: 480px; margin-top: 16px; margin-bottom: 8px;
+      background: linear-gradient(90deg, #b91c1c, #dc2626, #b91c1c); color: #ffff00;
+      font-size: 13.5px; font-weight: 900; text-align: center; padding: 7px 4px;
+      border-radius: 8px; border: 1.5px solid #facc15; text-transform: uppercase;
     }
-    .operator-bar label { font-size: 12px; font-weight: 800; color: #38bdf8; white-space: nowrap; }
-    .operator-select {
-      background: #1e293b; color: #facc15; border: 1px solid #475569;
-      border-radius: 6px; padding: 6px 8px; font-size: 13px; font-weight: 800; width: 100%; outline: none;
-    }
-
-    .duty-pass-card {
-      background: linear-gradient(180deg, #0b1e42 0%, #060d1d 100%);
-      border: 3px solid #22c55e; border-radius: 14px; padding: 16px;
-      box-shadow: 0 0 25px rgba(34, 197, 94, 0.35); margin-bottom: 16px;
-    }
-    .pass-header {
-      border-bottom: 2px dashed #334155; padding-bottom: 10px; margin-bottom: 12px;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .pass-title { font-size: 14px; font-weight: 900; color: #22c55e; text-transform: uppercase; }
-    .pass-shift-badge { background: #ff00ff; color: #ffff00; font-size: 10px; font-weight: 900; padding: 3px 8px; border-radius: 4px; }
-    .pass-date-banner {
-      background: #ffff00; color: #0000cd; font-weight: 900; font-size: 14px;
-      text-align: center; padding: 6px; border-radius: 6px; margin-bottom: 14px;
-    }
-
-    .pass-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-    .pass-field { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px 10px; }
-    .pass-field-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
-    .pass-field-value { font-size: 16px; font-weight: 900; color: #ffffff; word-break: break-word; }
-    .pass-field-highlight { color: #facc15; font-size: 20px; }
-
-    .pass-actions { display: flex; gap: 10px; }
-    .btn-action {
-      flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 900;
-      border: none; cursor: pointer; transition: transform 0.1s ease, box-shadow 0.2s ease;
-    }
-    .btn-action:active { transform: scale(0.97); }
-    .btn-pdf {
-      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-      color: #ffffff; box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
-    }
-    .btn-wa {
-      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-      color: #ffffff; box-shadow: 0 0 10px rgba(37, 211, 102, 0.4);
-    }
-    .btn-icon { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
-
-    .supervisor-toggle { text-align: center; margin-top: 10px; }
-    .supervisor-link { color: #64748b; font-size: 11px; text-decoration: underline; cursor: pointer; font-weight: 700; }
-
-    #allOperatorsTableWrapper { display: none; margin-top: 16px; border: 2px solid #facc15; border-radius: 8px; overflow: hidden; }
-    .all-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-    .all-table th { background: #facc15; color: #000; padding: 6px; font-weight: 900; text-align: center; }
-    .all-table td { padding: 6px; border: 1px solid #334155; text-align: center; font-weight: 700; }
-
-    .report-card { background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 14px; }
-    .report-title { font-size: 14px; font-weight: 900; color: #38bdf8; margin-bottom: 12px; text-transform: uppercase; text-align: center; }
-    .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
-    .stat-tile { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 8px; text-align: center; }
-    .stat-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; }
-    .stat-val { font-size: 18px; font-weight: 900; color: #facc15; }
-
-    .holidays-wrapper { display: flex; flex-direction: column; gap: 12px; }
-    .holiday-card { border: 2px solid #ef4444; border-radius: 10px; background: #000000; padding: 9px; }
-    .hol-header {
-      background: linear-gradient(90deg, #7f1d1d, #991b1b); color: #ffffff; padding: 8px 10px;
+    .holiday-cluster-wrapper { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 12px; }
+    .holiday-single-card { border: 2px solid #ff0000; border-radius: 10px; background-color: #000000; padding: 9px 8px; }
+    .holiday-header-strip {
+      background: linear-gradient(90deg, #7f1d1d, #991b1b); color: #ffffff; padding: 7px 10px;
       border-radius: 6px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px;
     }
-    .hol-badge {
-      background-color: #facc15; color: #000000; padding: 4px 10px; border-radius: 14px;
-      font-size: 12px; font-weight: 900; box-shadow: 0 0 10px rgba(250, 204, 21, 0.8);
-    }
-    .relay-group-grid { display: flex; justify-content: space-between; gap: 6px; }
-    .relay-box { flex: 1; border: 1.5px solid #ef4444; border-radius: 6px; padding: 6px 2px; text-align: center; }
-    .relay-box-title { color: #00ffff; font-size: 11px; font-weight: 900; margin-bottom: 2px; }
-    .relay-box-shift { color: #ffff00; font-size: 24px; font-weight: 900; }
-
-    .bottom-dock {
-      position: fixed; bottom: 0; left: 0; width: 100%; height: 62px;
-      background: #091122; border-top: 2px solid #1e293b;
-      display: flex; justify-content: space-around; align-items: center; z-index: 1000;
-    }
-    .dock-tab {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: none; border: none; color: #94a3b8; font-size: 10px; font-weight: 800; cursor: pointer; flex: 1;
-    }
-    .dock-tab span:first-child { font-size: 18px; margin-bottom: 2px; }
-    .dock-tab.active { color: #38bdf8; }
-    .dock-tab.active span:first-child { transform: scale(1.15); }
+    .animated-countdown-badge { background-color: #facc15; color: #000000; padding: 5px 12px; border-radius: 16px; font-size: 13px; font-weight: 900; }
+    .relay-cards-grid { display: flex; justify-content: space-between; gap: 6px; }
+    .relay-single-box { flex: 1; border: 1.5px solid #ff0000; border-radius: 6px; background-color: #000000; padding: 6px 2px; text-align: center; }
+    .relay-title { color: #00ffff; font-size: 11px; font-weight: 900; margin-bottom: 3px; }
+    .shift-letter-val { color: #ffff00; font-size: 24px; font-weight: 900; }
   </style>
 </head>
 <body>
 
-  <div id="splashScreen">
-    <div class="splash-logo-wrap">
-      <div class="splash-pulse-ring"></div>
-      <div class="splash-house">
-        <div class="splash-r3"><span>R</span><span>3</span></div>
-        <div class="splash-tag">DUTY LINEUP</div>
-      </div>
-    </div>
-    <div class="splash-load-text">⚡ Synchronizing Duty Lineup...</div>
+  <div id="syncOverlay">
+    <div class="spinner-ring"></div>
+    <div class="sync-text">⚡ Synchronizing Duty Lineup...</div>
   </div>
 
-  <div id="installModal">
-    <div class="modal-box">
-      <div class="modal-title">📲 Install Duty Lineup App</div>
-      <div class="modal-desc">Install on your phone to check your daily duty and holidays anytime.</div>
-      <div class="progress-track"><div class="progress-bar" id="installProgressBar"></div></div>
-      <div class="progress-pct" id="installPercentText">0%</div>
-      <button class="modal-btn-install" id="installActionBtn">Proceed to Install</button>
-      <div class="manual-guide" id="manualGuide">
-        👉 Tap Chrome's three dots (<strong>⋮</strong>) in the top right and tap <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong>.
+  <div class="board-container">
+    <div class="main-title" id="uiMainTitle">DAILY OPERATOR DUTY LINEUP</div>
+    
+    <div class="live-bar">
+      <div class="live-status">
+        <span class="live-dot"></span><span id="uiRefreshed">LIVE</span>
       </div>
-    </div>
-  </div>
-
-  <div class="top-header-bar">
-    <div class="brand-mark">
-      <span>🛡️</span> <span>R3 OPERATOR PORTAL</span>
-    </div>
-    <div class="top-actions">
-      <button class="pwa-badge" id="installAppHeaderBtn" onclick="openInstallModal()">📥 Install</button>
-      <button class="pwa-badge" onclick="fetchLiveData()" style="background:#1e293b; color:#00ffff; border:1px solid #00ffff;">🔄</button>
-    </div>
-  </div>
-
-  <div class="app-viewport">
-    <div class="operator-bar">
-      <label for="loggedOperatorSelect">👤 Select Name:</label>
-      <select id="loggedOperatorSelect" class="operator-select" onchange="onOperatorChanged()">
-        <option value="">-- Loading Operators... --</option>
-      </select>
-    </div>
-
-    <!-- TAB 1: INDIVIDUAL DUTY PASS VIEW -->
-    <div id="viewLineup" class="view-panel active">
-      <div id="myDutyCardWrap">
-        <div class="duty-pass-card" id="printableDutyCard">
-          <div class="pass-header">
-            <div class="pass-title">🎖️ Individual Duty Pass</div>
-            <div class="pass-shift-badge">RELAY - 3</div>
-          </div>
-          <div class="pass-date-banner" id="cardDateBanner">-</div>
-
-          <div class="pass-grid">
-            <div class="pass-field" style="grid-column: span 2;">
-              <div class="pass-field-label">Operator Name</div>
-              <div class="pass-field-value" id="cardOpName" style="color:#38bdf8;">-</div>
-            </div>
-            <div class="pass-field" style="grid-column: span 2; background:#1e293b; border-color:#22c55e;">
-              <div class="pass-field-label">Assigned Duty Position</div>
-              <div class="pass-field-value pass-field-highlight" id="cardPosition">-</div>
-            </div>
-            <div class="pass-field">
-              <div class="pass-field-label">Due Days</div>
-              <div class="pass-field-value" id="cardDue" style="color:#ffff00;">-</div>
-            </div>
-            <div class="pass-field">
-              <div class="pass-field-label">Shift</div>
-              <div class="pass-field-value" id="cardShift" style="color:#00ff00;">-</div>
-            </div>
-            <div class="pass-field">
-              <div class="pass-field-label">Last Duty Date</div>
-              <div class="pass-field-value" id="cardLastDate">-</div>
-            </div>
-            <div class="pass-field">
-              <div class="pass-field-label">Day</div>
-              <div class="pass-field-value" id="cardDay" style="color:#38bdf8;">-</div>
-            </div>
-          </div>
-
-          <div style="font-size:11px; color:#cbd5e1; background:#0f172a; padding:8px 10px; border-radius:6px; margin-bottom:12px; border:1px solid #334155;">
-            <strong>Notice / Info:</strong> <span id="cardNotice">Regular shift assignment.</span>
-          </div>
-
-          <div class="pass-actions">
-            <button class="btn-action btn-pdf" onclick="downloadDutyPassPDF()">
-              <svg class="btn-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.5 8.5c0 .83-.67 1.5-1.5 1.5H7v2H5.5V9H8c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V9H13c.83 0 1.5.67 1.5 1.5v3zm4-3H17v1h1.5V13H17v2h-1.5V9h3v1.5zM7 10.5h1v1H7v-1zm4.5 0h1v3h-1v-3z"/></svg>
-              <span>Download PDF</span>
-            </button>
-            <button class="btn-action btn-wa" onclick="shareDutyPassWhatsApp()">
-              <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.64c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.26-1.5-1.41-1.75-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01s-.44.06-.67.31c-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.71 4.3 3.8.6.26 1.07.42 1.44.54.61.19 1.16.17 1.6-.11.49-.31.75-.82.85-1.21.1-.39.1-.73.07-.82-.03-.09-.16-.14-.41-.27z"/></svg>
-              <span>Share WhatsApp</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="supervisor-toggle">
-        <span class="supervisor-link" onclick="toggleSupervisorTable()">🔐 Shift Incharge: View Full Team Lineup</span>
-      </div>
-      <div id="allOperatorsTableWrapper">
-        <table class="all-table">
-          <thead>
-            <tr><th>Position</th><th>Name</th><th>Due</th><th>Last Date</th><th>Day</th><th>Shf</th></tr>
-          </thead>
-          <tbody id="fullTeamTableBody"></tbody>
-        </table>
+      <div style="display:flex; gap:6px;">
+        <button class="whatsapp-btn" onclick="shareToWhatsApp()">💬 WhatsApp</button>
+        <button class="refresh-btn" onclick="fetchDataJSONP()">🔄 Refresh</button>
       </div>
     </div>
 
-    <!-- TAB 2: OPERATOR MONTHLY REPORT -->
-    <div id="viewReport" class="view-panel">
-      <div class="report-card" id="printableReport">
-        <div class="report-title">📊 Operator Monthly Report</div>
-        
-        <div class="stat-grid">
-          <div class="stat-tile"><div class="stat-label">Operator</div><div class="stat-val" id="repName" style="font-size:14px;">-</div></div>
-          <div class="stat-tile"><div class="stat-label">Current Position</div><div class="stat-val" id="repPos" style="font-size:14px;">-</div></div>
-          <div class="stat-tile"><div class="stat-label">Total Shifts Done</div><div class="stat-val">18</div></div>
-          <div class="stat-tile"><div class="stat-label">Leave Balance</div><div class="stat-val">04</div></div>
-        </div>
+    <div class="date-banner" id="uiDateBanner">-</div>
 
-        <div style="font-size:12px; color:#cbd5e1; margin-bottom:14px; background:#1e293b; padding:10px; border-radius:8px;">
-          <strong>Status:</strong> <span id="repStatusSummary">Active rotation status recorded in shift register.</span>
-        </div>
+    <table class="master-board-table">
+      <thead>
+        <tr><th>Position</th><th>Name</th><th>Due</th><th>Last Date</th><th>Day</th><th>Shf</th></tr>
+      </thead>
+      <tbody id="uiTableBody"></tbody>
+    </table>
 
-        <div class="pass-actions">
-          <button class="btn-action btn-pdf" onclick="downloadReportPDF()">
-            <svg class="btn-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.5 8.5c0 .83-.67 1.5-1.5 1.5H7v2H5.5V9H8c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V9H13c.83 0 1.5.67 1.5 1.5v3zm4-3H17v1h1.5V13H17v2h-1.5V9h3v1.5zM7 10.5h1v1H7v-1zm4.5 0h1v3h-1v-3z"/></svg>
-            <span>Download PDF</span>
-          </button>
-          <button class="btn-action btn-wa" onclick="shareReportWhatsApp()">
-            <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.64c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.26-1.5-1.41-1.75-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01s-.44.06-.67.31c-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.71 4.3 3.8.6.26 1.07.42 1.44.54.61.19 1.16.17 1.6-.11.49-.31.75-.82.85-1.21.1-.39.1-.73.07-.82-.03-.09-.16-.14-.41-.27z"/></svg>
-            <span>Share WhatsApp</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 3: REMAINING HOLIDAYS -->
-    <div id="viewHolidays" class="view-panel">
-      <div style="font-size:13px; font-weight:900; color:#ffff00; margin-bottom:12px; text-align:center;">
-        🎉 UPCOMING COMPANY HOLIDAYS & RELAY SHIFTS
-      </div>
-      <div class="holidays-wrapper" id="holidaysListContainer"></div>
+    <div class="marquee-container">
+      <div class="marquee-text">✦ WELCOME RELAY - 3 ✦ HAVE A SAFE AND PRODUCTIVE SHIFT ✦</div>
     </div>
   </div>
 
-  <div class="bottom-dock">
-    <button class="dock-tab active" id="tabLineup" onclick="switchTab('lineup')">
-      <span>🎖️</span> <span>My Duty</span>
-    </button>
-    <button class="dock-tab" id="tabReport" onclick="switchTab('report')">
-      <span>📊</span> <span>My Report</span>
-    </button>
-    <button class="dock-tab" id="tabHolidays" onclick="switchTab('holidays')">
-      <span>🗓️</span> <span>Holidays</span>
-    </button>
-  </div>
+  <div id="companyHolidayHeader" class="company-holiday-master-header" style="display:none;">🎉 COMPANY NEXT HOLIDAY</div>
+  <div class="holiday-cluster-wrapper" id="holidayClusterWrapper"></div>
 
   <script>
     let globalData = null;
-    let deferredPrompt = null;
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(()=>{});
-    }
+    // JSONP loader bypasses CORS and blockages completely
+    function fetchDataJSONP() {
+      const overlay = document.getElementById('syncOverlay');
+      overlay.style.display = 'flex';
+      overlay.style.opacity = '1';
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      document.getElementById('installAppHeaderBtn').style.display = 'block';
-    });
-
-    function openInstallModal() {
-      const modal = document.getElementById('installModal');
-      const bar = document.getElementById('installProgressBar');
-      const text = document.getElementById('installPercentText');
-      const guide = document.getElementById('manualGuide');
-      modal.style.display = 'flex';
-      guide.style.display = 'none';
-
-      let count = 0;
-      let interval = setInterval(() => {
-        count += 5;
-        bar.style.width = count + '%';
-        text.innerText = count + '%';
-        if (count >= 100) {
-          clearInterval(interval);
-          if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(() => {
-              deferredPrompt = null;
-              modal.style.display = 'none';
-            });
-          } else {
-            guide.style.display = 'block';
-          }
-        }
-      }, 35);
-    }
-
-    document.getElementById('installActionBtn').addEventListener('click', openInstallModal);
-
-    // --- UNIVERSAL DATA RETRIEVAL (Bypasses Browser Tracking Shields) ---
-    function fetchLiveData() {
-      const splash = document.getElementById('splashScreen');
-      splash.style.display = 'flex';
-      splash.style.opacity = '1';
-
-      // Global receiver function for JSONP
       window.handleRosterResponse = function(data) {
-        if (!data) return;
         globalData = data;
-        hydrateApp(data);
-        setTimeout(() => {
-          splash.style.opacity = '0';
-          setTimeout(() => splash.style.display = 'none', 450);
-        }, 300);
+        renderApp(data);
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.style.display = 'none', 300);
       };
 
-      // Method 1: Standard Script Tag
-      const s = document.createElement('script');
-      s.src = APPS_SCRIPT_URL + '?callback=handleRosterResponse&t=' + Date.now();
-      
-      // Method 2: Public Proxy Fallback if Browser Shield blocks Script
-      s.onerror = function() {
-        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(APPS_SCRIPT_URL);
-        fetch(proxyUrl)
-          .then(res => res.json())
-          .then(data => {
-            window.handleRosterResponse(data);
-          })
-          .catch(() => {
-            splash.style.display = 'none';
-            alert('Please tap the Shield/Eye icon on your browser address bar and turn Shields OFF.');
-          });
-      };
+      const oldScript = document.getElementById('jsonpScript');
+      if (oldScript) oldScript.remove();
 
-      document.body.appendChild(s);
+      const script = document.createElement('script');
+      script.id = 'jsonpScript';
+      script.src = APPS_SCRIPT_URL + '?callback=handleRosterResponse&t=' + Date.now();
+      script.onerror = function() {
+        overlay.style.display = 'none';
+        alert("Connection blocked. Please turn off browser ad-blocker shields for GitHub Pages.");
+      };
+      document.body.appendChild(script);
     }
 
-    function hydrateApp(data) {
-      const selectEl = document.getElementById('loggedOperatorSelect');
-      const savedOp = localStorage.getItem('r3_logged_operator') || '';
-      
-      selectEl.innerHTML = '<option value="">-- Choose Operator --</option>';
-      (data.operators || []).forEach(op => {
-        const isSelected = (op === savedOp) ? 'selected' : '';
-        selectEl.innerHTML += `<option value="${op}" ${isSelected}>${op}</option>`;
-      });
+    function renderApp(data) {
+      document.getElementById('uiMainTitle').innerText = data.mainTitle || 'DAILY OPERATOR DUTY LINEUP';
+      document.getElementById('uiRefreshed').innerText = 'LIVE | ' + (data.refreshed || '');
+      document.getElementById('uiDateBanner').innerText = data.dateBanner || '-';
 
-      renderPersonalDuty();
-
-      let tableHtml = '';
+      let tbodyHtml = '';
       (data.rows || []).forEach(r => {
         if (r.isNotice) {
-          tableHtml += `<tr><td colspan="6" style="background:#8b0000; color:#ffff00; font-weight:900;">${r.duty}</td></tr>`;
+          tbodyHtml += `<tr><td colspan="6" class="notice-cell">${r.duty}</td></tr>`;
         } else {
-          const p = (r.duty || "").split("-").map(s => s.trim());
-          tableHtml += `<tr>
-            <td style="background:#00ffff; color:#000; font-weight:900;">${r.pos || ''}</td>
-            <td style="text-align:left; padding-left:6px;">${p[0] || '-'}</td>
-            <td style="color:#ffff00;">${p[1] || '-'}</td>
-            <td>${p[2] || '-'}</td>
-            <td style="color:#38bdf8;">${p[3] || '-'}</td>
-            <td style="color:#00ff00; font-weight:900;">${p[4] || '-'}</td>
+          const parts = (r.duty || "").split("-").map(s => s.trim());
+          tbodyHtml += `<tr>
+            <td class="cyan-label-cell">${r.pos || ''}</td>
+            <td class="name-cell">${parts[0] || '-'}</td>
+            <td class="due-cell">${parts[1] || '-'}</td>
+            <td class="date-cell">${parts[2] || '-'}</td>
+            <td class="day-cell">${parts[3] || '-'}</td>
+            <td class="shift-cell">${parts[4] || '-'}</td>
           </tr>`;
         }
       });
-      document.getElementById('fullTeamTableBody').innerHTML = tableHtml;
 
-      const holContainer = document.getElementById('holidaysListContainer');
-      let holHtml = '';
-      if (data.holidays && data.holidays.length > 0) {
-        data.holidays.forEach(h => {
+      tbodyHtml += `
+        <tr><td class="cyan-label-cell">Available</td><td class="summary-center-cell">${data.availableCount || '0'}</td><td colspan="2" class="cyan-label-cell">Stand By</td><td colspan="2" class="summary-center-cell">${data.standBy || '-'}</td></tr>
+        <tr><td class="cyan-label-cell">OFF Day</td><td colspan="5" class="summary-val-cell">${data.offDay || 'None'}</td></tr>
+        <tr><td class="cyan-label-cell">Leave</td><td colspan="5" class="summary-val-cell">${data.leave || 'None'}</td></tr>
+        <tr><td class="cyan-label-cell">Info</td><td colspan="5" class="summary-val-cell">${data.info || '-'}</td></tr>
+      `;
+      document.getElementById('uiTableBody').innerHTML = tbodyHtml;
+
+      const holWrapper = document.getElementById('holidayClusterWrapper');
+      const holHeader = document.getElementById('companyHolidayHeader');
+      if (data.holidayCluster && data.holidayCluster.length > 0) {
+        holHeader.style.display = 'block';
+        let holHtml = '';
+        data.holidayCluster.forEach(hol => {
           holHtml += `
-            <div class="holiday-card">
-              <div class="hol-header">
-                <div style="font-size:12px; font-weight:900;">🎈 ${h.name} (${h.date} - ${h.day})</div>
-                <div class="hol-badge">${h.daysToGo}</div>
+            <div class="holiday-single-card">
+              <div class="holiday-header-strip">
+                <div class="holiday-name-text">🎈 <strong>${hol.name}</strong> (${hol.date} - ${hol.day})</div>
+                <div class="animated-countdown-badge">${hol.daysToGo}</div>
               </div>
-              <div class="relay-group-grid">
-                <div class="relay-box"><div class="relay-box-title">R3 Group</div><div class="relay-box-shift">${h.r3}</div></div>
-                <div class="relay-box"><div class="relay-box-title">R2 Group</div><div class="relay-box-shift">${h.r2}</div></div>
-                <div class="relay-box"><div class="relay-box-title">R1 Group</div><div class="relay-box-shift">${h.r1}</div></div>
+              <div class="relay-cards-grid">
+                <div class="relay-single-box"><div class="relay-title">R3 Group</div><div class="shift-letter-val">${hol.r3}</div></div>
+                <div class="relay-single-box"><div class="relay-title">R2 Group</div><div class="shift-letter-val">${hol.r2}</div></div>
+                <div class="relay-single-box"><div class="relay-title">R1 Group</div><div class="shift-letter-val">${hol.r1}</div></div>
               </div>
             </div>`;
         });
+        holWrapper.innerHTML = holHtml;
       } else {
-        holHtml = `<div style="text-align:center; color:#94a3b8; padding:30px;">No remaining holidays.</div>`;
+        holHeader.style.display = 'none';
+        holWrapper.innerHTML = '';
       }
-      holContainer.innerHTML = holHtml;
     }
 
-    function renderPersonalDuty() {
+    function shareToWhatsApp() {
       if (!globalData) return;
-      const selectedOp = document.getElementById('loggedOperatorSelect').value;
-      document.getElementById('cardDateBanner').innerText = globalData.dateBanner || '-';
+      let msg = `🏢 *${globalData.mainTitle}*\n`;
+      if (globalData.dateBanner && globalData.dateBanner !== '-') {
+        msg += `📅 *${globalData.dateBanner}*\n`;
+      }
+      msg += `━━━━━━━━━━━━━━━━━━━━\n📋 *DUTY ROSTER:*\n`;
+      (globalData.waRosterList || []).forEach(line => { msg += line + '\n'; });
+      msg += `━━━━━━━━━━━━━━━━━━━━\n*SUMMARY:*\n`;
+      msg += `• *Stand By:* ${globalData.standBy || '-'}\n`;
+      msg += `• *OFF Day:* ${globalData.offDay || 'None'}\n`;
+      msg += `• *Leave:* ${globalData.leave || 'None'}\n`;
 
-      if (!selectedOp) {
-        document.getElementById('cardOpName').innerText = "Please Select Your Name";
-        document.getElementById('cardPosition').innerText = "No Operator Selected";
-        document.getElementById('cardDue').innerText = "-";
-        document.getElementById('cardShift').innerText = "-";
-        document.getElementById('cardLastDate').innerText = "-";
-        document.getElementById('cardDay').innerText = "-";
-        document.getElementById('cardNotice').innerText = "Select your name from the dropdown to reveal your duty pass.";
-        return;
+      if (globalData.holidayCluster && globalData.holidayCluster.length > 0) {
+        msg += `━━━━━━━━━━━━━━━━━━━━\n🎉 *COMPANY UPCOMING HOLIDAYS:*\n`;
+        globalData.holidayCluster.forEach(hol => {
+          msg += `• *${hol.name}* (${hol.date} - ${hol.day}) [${hol.daysToGo}]\n`;
+          msg += `  └ R3: *${hol.r3}* | R2: *${hol.r2}* | R1: *${hol.r1}*\n`;
+        });
       }
 
-      document.getElementById('cardOpName').innerText = selectedOp;
-
-      let dutyFound = false;
-
-      if (globalData.leave && globalData.leave.indexOf(selectedOp) > -1) {
-        setDutyCard("LEAVE", "-", "-", "-", "-", "On Approved Leave");
-        dutyFound = true;
-      } else if (globalData.offDay && globalData.offDay.indexOf(selectedOp) > -1) {
-        setDutyCard("OFF DAY", "-", "-", "-", "-", "Scheduled Weekly Off");
-        dutyFound = true;
-      } else if (globalData.standBy && globalData.standBy.indexOf(selectedOp) > -1) {
-        setDutyCard("STAND BY", "-", "-", "-", "-", "Assigned on Standby Duty");
-        dutyFound = true;
-      }
-
-      if (!dutyFound && globalData.rows) {
-        for (let i = 0; i < globalData.rows.length; i++) {
-          const r = globalData.rows[i];
-          if (!r.isNotice && r.duty && r.duty.indexOf(selectedOp) > -1) {
-            const parts = r.duty.split("-").map(s => s.trim());
-            setDutyCard(
-              r.pos,
-              parts[1] || "-",
-              parts[4] || "A",
-              parts[2] || "-",
-              parts[3] || "-",
-              "Assigned regular duty."
-            );
-            dutyFound = true;
-            break;
-          }
-        }
-      }
-
-      if (!dutyFound) {
-        setDutyCard("GENERAL / RELIEVER", "-", "A", "-", "-", "No active position restriction.");
-      }
-
-      document.getElementById('repName').innerText = selectedOp;
-      document.getElementById('repPos').innerText = document.getElementById('cardPosition').innerText;
-      document.getElementById('repStatusSummary').innerText = `Operator ${selectedOp} is scheduled at ${document.getElementById('cardPosition').innerText} for ${globalData.dateBanner}.`;
-    }
-
-    function setDutyCard(pos, due, shift, lastDate, day, notice) {
-      document.getElementById('cardPosition').innerText = pos;
-      document.getElementById('cardDue').innerText = due;
-      document.getElementById('cardShift').innerText = shift;
-      document.getElementById('cardLastDate').innerText = lastDate;
-      document.getElementById('cardDay').innerText = day;
-      document.getElementById('cardNotice').innerText = notice;
-    }
-
-    function onOperatorChanged() {
-      const selected = document.getElementById('loggedOperatorSelect').value;
-      if (selected) {
-        localStorage.setItem('r3_logged_operator', selected);
-      }
-      renderPersonalDuty();
-    }
-
-    function toggleSupervisorTable() {
-      const el = document.getElementById('allOperatorsTableWrapper');
-      el.style.display = (el.style.display === 'block') ? 'none' : 'block';
-    }
-
-    function switchTab(tab) {
-      document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.dock-tab').forEach(t => t.classList.remove('active'));
-
-      if (tab === 'lineup') {
-        document.getElementById('viewLineup').classList.add('active');
-        document.getElementById('tabLineup').classList.add('active');
-      } else if (tab === 'report') {
-        document.getElementById('viewReport').classList.add('active');
-        document.getElementById('tabReport').classList.add('active');
-      } else if (tab === 'holidays') {
-        document.getElementById('viewHolidays').classList.add('active');
-        document.getElementById('tabHolidays').classList.add('active');
-      }
-    }
-
-    function downloadDutyPassPDF() {
-      const op = document.getElementById('cardOpName').innerText;
-      const element = document.getElementById('printableDutyCard');
-      const opt = {
-        margin: 0.3,
-        filename: `${op}_Duty_Pass.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-      };
-      html2pdf().set(opt).from(element).save();
-    }
-
-    function shareDutyPassWhatsApp() {
-      const op = document.getElementById('cardOpName').innerText;
-      const pos = document.getElementById('cardPosition').innerText;
-      const shift = document.getElementById('cardShift').innerText;
-      const due = document.getElementById('cardDue').innerText;
-      const date = globalData ? globalData.dateBanner : '-';
-
-      let msg = `🎖️ *OPERATOR DUTY PASS*\n`;
-      msg += `📅 *${date}*\n`;
-      msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-      msg += `• *Operator:* ${op}\n`;
-      msg += `• *Position:* ${pos}\n`;
-      msg += `• *Shift:* ${shift}\n`;
-      msg += `• *Due Days:* ${due}\n`;
-      msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-      msg += `📲 *Open App:* ${GITHUB_PORTAL_URL}`;
+      msg += `━━━━━━━━━━━━━━━━━━━━\n🔗 *Live Duty Lineup:* ${window.location.href}`;
 
       const enc = encodeURIComponent(msg);
-      window.location.href = `whatsapp://send?text=${enc}`;
+      window.location.href = "whatsapp://send?text=" + enc;
     }
 
-    function downloadReportPDF() {
-      const op = document.getElementById('repName').innerText;
-      const element = document.getElementById('printableReport');
-      const opt = {
-        margin: 0.3,
-        filename: `${op}_Monthly_Report.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-      };
-      html2pdf().set(opt).from(element).save();
-    }
-
-    function shareReportWhatsApp() {
-      const op = document.getElementById('repName').innerText;
-      const pos = document.getElementById('repPos').innerText;
-
-      let msg = `📊 *OPERATOR MONTHLY REPORT*\n`;
-      msg += `• *Operator:* ${op}\n`;
-      msg += `• *Current Duty:* ${pos}\n`;
-      msg += `• *Total Shifts Done:* 18\n`;
-      msg += `• *Leave Balance:* 04 Days\n`;
-      msg += `📲 *Portal:* ${GITHUB_PORTAL_URL}`;
-
-      const enc = encodeURIComponent(msg);
-      window.location.href = `whatsapp://send?text=${enc}`;
-    }
-
-    window.onload = fetchLiveData;
+    window.onload = fetchDataJSONP;
   </script>
 </body>
 </html>
