@@ -155,15 +155,32 @@
       cursor: pointer;
     }
 
+    /* OFFICIAL BRANDED WHATSAPP BUTTON */
     .whatsapp-btn {
       background: #25D366;
-      color: #000000;
-      border: 1px solid #25D366;
+      color: #ffffff;
+      border: none;
       border-radius: 4px;
-      font-size: 10px;
-      font-weight: 900;
+      font-size: 11px;
+      font-weight: 800;
       padding: 3px 8px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 0 8px rgba(37, 211, 102, 0.4);
+      transition: transform 0.1s ease;
+    }
+
+    .whatsapp-btn:active {
+      transform: scale(0.96);
+    }
+
+    .whatsapp-icon-svg {
+      width: 14px;
+      height: 14px;
+      fill: #ffffff;
+      flex-shrink: 0;
     }
 
     .date-banner {
@@ -417,7 +434,12 @@
         <span class="live-dot"></span><span id="uiRefreshed">LIVE</span>
       </div>
       <div class="action-btn-group">
-        <button class="whatsapp-btn" onclick="shareToWhatsApp()">💬 WhatsApp</button>
+        <button class="whatsapp-btn" onclick="shareToWhatsApp()">
+          <svg class="whatsapp-icon-svg" viewBox="0 0 24 24">
+            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.634.079-1.874-.436-1.579-.654-2.589-2.274-2.667-2.38-.078-.105-.634-.844-.634-1.611 0-.766.401-1.144.544-1.298.144-.154.312-.193.415-.193.104 0 .208.002.298.007.094.004.22-.036.344.262.129.31.442 1.077.481 1.155.039.078.065.17.013.274-.052.105-.078.17-.156.262-.078.092-.163.205-.234.275-.078.079-.159.164-.068.32.091.157.404.668.868 1.082.597.533 1.099.698 1.255.776.156.079.247.066.338-.04.091-.105.39-.454.494-.61.104-.157.208-.131.344-.079.136.052.868.41 1.018.485.15.075.25.112.287.175.037.064.037.371-.107.776zM12 2C6.477 2 2 6.477 2 12c0 1.819.49 3.523 1.344 4.992L2.054 22l5.174-1.258A9.957 9.957 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18.2a8.16 8.16 0 01-4.38-1.264l-.314-.187-3.064.746.815-2.986-.205-.326A8.163 8.163 0 013.8 12c0-4.521 3.679-8.2 8.2-8.2 4.521 0 8.2 3.679 8.2 8.2 0 4.521-3.679 8.2-8.2 8.2z"/>
+          </svg>
+          <span>WhatsApp</span>
+        </button>
         <button class="refresh-btn" onclick="loadSheetData()">🔄 Refresh</button>
       </div>
     </div>
