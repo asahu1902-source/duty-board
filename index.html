@@ -18,7 +18,7 @@
     html, body {
       width: 100%;
       height: 100%;
-      background-color: #060d1d;
+      background-color: #000000;
       overflow: hidden;
     }
 
@@ -35,7 +35,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: opacity 0.5s ease-out;
+      pointer-events: all;
     }
 
     .splash-logo-container {
@@ -55,7 +56,7 @@
       height: 140px;
       border-radius: 50%;
       border: 3.5px dashed #00ffff;
-      animation: spinRing 4s linear infinite;
+      animation: spinRing 3s linear infinite;
     }
 
     /* Rounded App Icon */
@@ -78,7 +79,7 @@
       letter-spacing: 1px;
       text-transform: uppercase;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      animation: textPulse 1.2s ease-in-out infinite alternate;
+      animation: textPulse 1s ease-in-out infinite alternate;
     }
 
     @keyframes spinRing {
@@ -86,7 +87,7 @@
     }
 
     @keyframes textPulse {
-      0% { opacity: 0.45; transform: scale(0.98); }
+      0%   { opacity: 0.45; transform: scale(0.98); }
       100% { opacity: 1; transform: scale(1.02); text-shadow: 0 0 12px rgba(0, 255, 255, 0.8); }
     }
 
@@ -120,30 +121,29 @@
   </iframe>
 
   <script>
-    // Holds the splash screen open until Google Apps Script completes backend rendering
-    const MIN_DISPLAY_TIME = 2500; // 2.5 seconds minimum to ensure full backend sheet sync
-    const pageStartTime = Date.now();
+    let isDismissed = false;
 
-    function dismissSplashWhenReady() {
-      const elapsed = Date.now() - pageStartTime;
-      const remainingWait = Math.max(0, MIN_DISPLAY_TIME - elapsed);
-
-      setTimeout(() => {
-        const splash = document.getElementById('splashScreen');
-        if (splash) {
-          splash.style.opacity = '0';
-          setTimeout(() => {
-            splash.style.display = 'none';
-          }, 600);
-        }
-      }, remainingWait);
+    function revealPage() {
+      if (isDismissed) return;
+      isDismissed = true;
+      const splash = document.getElementById('splashScreen');
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(() => {
+          splash.style.display = 'none';
+        }, 500);
+      }
     }
 
-    const frame = document.getElementById('dutyFrame');
-    frame.addEventListener('load', dismissSplashWhenReady);
+    // Listens for the handshake message fired by Apps Script Index.html
+    window.addEventListener('message', function(event) {
+      if (event.data === 'PAGE_FULLY_LOADED') {
+        revealPage();
+      }
+    });
 
-    // Fallback safety trigger in case iframe load event is delayed
-    setTimeout(dismissSplashWhenReady, 4000);
+    // Failsafe timer so screen never hangs indefinitely on poor connections
+    setTimeout(revealPage, 6000);
   </script>
 
 </body>
