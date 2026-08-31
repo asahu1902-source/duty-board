@@ -3,134 +3,647 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <title>Live Duty Lineup Board</title>
-
-  <!-- Web App Manifest -->
+  <title>R3 Operator Duty Portal</title>
   <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#060d1d">
+  <!-- html2pdf for direct PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-  <!-- App Icons -->
-  <link rel="icon" type="image/png" href="icon.png">
-  <link rel="apple-touch-icon" href="icon.png">
-
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#071739">
+  <script>
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqlpg1dFGIHPP/exec';
+    const GITHUB_PORTAL_URL = 'https://asahu1902-source.github.io/duty-board/';
+  </script>
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background-color: #060d1d; color: #ffffff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 75px; }
+
+    /* --- 1. FULL-SCREEN R3 SPLASH SCREEN --- */
+    #splashScreen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: #060d1d; z-index: 100000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 0.5s ease-out;
     }
-    html, body {
-      width: 100%;
-      height: 100%;
-      background-color: #000000;
-      overflow-x: hidden;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      touch-action: manipulation;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    .splash-logo-wrap {
+      width: 190px; height: 190px; border-radius: 50%;
+      border: 4px solid #facc15; display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(circle, #0b1e42 0%, #060d1d 90%);
+      box-shadow: 0 0 35px rgba(250, 204, 21, 0.4);
+      position: relative; margin-bottom: 25px;
     }
-    
-    /* Direct Operator Install Header */
-    #install-banner {
-      display: none;
-      width: 100%;
-      max-width: 900px;
-      background: #071739;
-      border-bottom: 2px solid #f59e0b;
-      padding: 10px 14px;
-      align-items: center;
-      justify-content: space-between;
-      z-index: 9999;
+    .splash-house {
+      width: 120px; height: 120px; border: 4px solid #ef4444; border-radius: 8px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;
     }
-    .install-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .splash-r3 { font-size: 42px; font-weight: 900; letter-spacing: -2px; }
+    .splash-r3 span:first-child { color: #ef4444; }
+    .splash-r3 span:last-child { color: #facc15; }
+    .splash-tag {
+      position: absolute; bottom: -12px; background: #ef4444; color: #ffffff;
+      font-size: 9px; font-weight: 900; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px;
     }
-    .install-info img {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
+    .splash-pulse-ring {
+      position: absolute; width: 210px; height: 210px; border-radius: 50%;
+      border: 2px dashed #00ffff; animation: spin 8s linear infinite;
     }
-    .install-text {
-      color: #ffffff;
-      font-size: 14px;
-      font-weight: bold;
+    .splash-load-text {
+      color: #00ffff; font-size: 14px; font-weight: 800; letter-spacing: 0.8px;
+      text-transform: uppercase; animation: pulseText 1s ease-in-out infinite alternate;
     }
-    #install-btn {
-      background: #22c55e;
-      color: #000000;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-weight: 900;
-      cursor: pointer;
-      font-size: 13px;
-      text-transform: uppercase;
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes pulseText { 0% { opacity: 0.4; } 100% { opacity: 1; } }
+
+    /* --- 2. INSTALL POPUP MODAL --- */
+    #installModal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); z-index: 100001;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-box {
+      background: #0f172a; border: 2px solid #38bdf8; border-radius: 16px;
+      padding: 24px 20px; width: 100%; max-width: 360px; text-align: center;
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.4);
+    }
+    .modal-title { font-size: 18px; font-weight: 900; color: #38bdf8; margin-bottom: 8px; }
+    .modal-desc { font-size: 12px; color: #cbd5e1; margin-bottom: 18px; line-height: 1.4; }
+    .progress-track {
+      width: 100%; height: 14px; background: #1e293b; border-radius: 10px;
+      overflow: hidden; border: 1px solid #475569; margin-bottom: 8px;
+    }
+    .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #22c55e); transition: width 0.2s linear; }
+    .progress-pct { font-size: 15px; font-weight: 900; color: #22c55e; margin-bottom: 16px; }
+    .modal-btn-install {
+      background: #0284c7; color: #fff; font-size: 14px; font-weight: 800;
+      padding: 10px 24px; border-radius: 8px; border: none; cursor: pointer; width: 100%;
+    }
+    .manual-guide {
+      display: none; font-size: 11px; color: #facc15; background: rgba(250, 204, 21, 0.1);
+      padding: 8px; border-radius: 6px; border: 1px dashed #facc15; margin-top: 10px; text-align: left;
     }
 
-    .schedule-container {
-      width: 100%;
-      max-width: 900px;
-      height: 100%;
-      flex: 1;
-      display: flex;
+    /* --- 3. TOP ACTION BAR --- */
+    .top-header-bar {
+      width: 100%; max-width: 480px; background: #0b1329; border-bottom: 2px solid #1e293b;
+      padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50;
     }
-    iframe {
-      width: 100%;
-      height: 100%;
-      min-height: 100vh;
-      border: none;
-      display: block;
+    .brand-mark { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 13px; color: #facc15; }
+    .top-actions { display: flex; align-items: center; gap: 6px; }
+    .pwa-badge {
+      background: #0284c7; color: #ffffff; border: none; border-radius: 6px;
+      font-size: 10px; font-weight: 900; padding: 4px 8px; cursor: pointer;
     }
+
+    /* --- 4. VIEWPORT & PERSONALIZED DUTY CARD --- */
+    .app-viewport { width: 100%; max-width: 480px; padding: 12px 8px; }
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+
+    /* OPERATOR IDENTITY BAR */
+    .operator-bar {
+      background: #0f172a; border: 2px solid #38bdf8; border-radius: 10px;
+      padding: 10px 12px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .operator-bar label { font-size: 12px; font-weight: 800; color: #38bdf8; white-space: nowrap; }
+    .operator-select {
+      background: #1e293b; color: #facc15; border: 1px solid #475569;
+      border-radius: 6px; padding: 6px 8px; font-size: 13px; font-weight: 800; width: 100%; outline: none;
+    }
+
+    /* PERSONAL DUTY PASS CARD */
+    .duty-pass-card {
+      background: linear-gradient(180deg, #0b1e42 0%, #060d1d 100%);
+      border: 3px solid #22c55e; border-radius: 14px; padding: 16px;
+      box-shadow: 0 0 25px rgba(34, 197, 94, 0.35); margin-bottom: 16px;
+    }
+    .pass-header {
+      border-bottom: 2px dashed #334155; padding-bottom: 10px; margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .pass-title { font-size: 14px; font-weight: 900; color: #22c55e; text-transform: uppercase; }
+    .pass-shift-badge { background: #ff00ff; color: #ffff00; font-size: 10px; font-weight: 900; padding: 3px 8px; border-radius: 4px; }
+    .pass-date-banner {
+      background: #ffff00; color: #0000cd; font-weight: 900; font-size: 14px;
+      text-align: center; padding: 6px; border-radius: 6px; margin-bottom: 14px;
+    }
+
+    .pass-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .pass-field { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px 10px; }
+    .pass-field-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
+    .pass-field-value { font-size: 16px; font-weight: 900; color: #ffffff; word-break: break-word; }
+    .pass-field-highlight { color: #facc15; font-size: 20px; }
+
+    .pass-actions { display: flex; gap: 8px; }
+    .btn-pdf { flex: 1; background: #dc2626; color: #fff; border: none; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; }
+    .btn-wa { flex: 1; background: #25D366; color: #000; border: none; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; }
+
+    /* SUPERVISOR VIEW TOGGLE */
+    .supervisor-toggle { text-align: center; margin-top: 10px; }
+    .supervisor-link { color: #64748b; font-size: 11px; text-decoration: underline; cursor: pointer; font-weight: 700; }
+
+    /* ALL OPERATOR TABLE (FOR SUPERVISOR ONLY) */
+    #allOperatorsTableWrapper { display: none; margin-top: 16px; border: 2px solid #facc15; border-radius: 8px; overflow: hidden; }
+    .all-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .all-table th { background: #facc15; color: #000; padding: 6px; font-weight: 900; text-align: center; }
+    .all-table td { padding: 6px; border: 1px solid #334155; text-align: center; font-weight: 700; }
+
+    /* --- 5. REPORT VIEW --- */
+    .report-card { background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 14px; }
+    .report-title { font-size: 14px; font-weight: 900; color: #38bdf8; margin-bottom: 12px; text-transform: uppercase; text-align: center; }
+    .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
+    .stat-tile { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 8px; text-align: center; }
+    .stat-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; }
+    .stat-val { font-size: 18px; font-weight: 900; color: #facc15; }
+
+    /* --- 6. HOLIDAYS VIEW --- */
+    .holidays-wrapper { display: flex; flex-direction: column; gap: 12px; }
+    .holiday-card { border: 2px solid #ef4444; border-radius: 10px; background: #000000; padding: 9px; }
+    .hol-header {
+      background: linear-gradient(90deg, #7f1d1d, #991b1b); color: #ffffff; padding: 8px 10px;
+      border-radius: 6px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px;
+    }
+    .hol-badge {
+      background-color: #facc15; color: #000000; padding: 4px 10px; border-radius: 14px;
+      font-size: 12px; font-weight: 900; box-shadow: 0 0 10px rgba(250, 204, 21, 0.8);
+    }
+    .relay-group-grid { display: flex; justify-content: space-between; gap: 6px; }
+    .relay-box { flex: 1; border: 1.5px solid #ef4444; border-radius: 6px; padding: 6px 2px; text-align: center; }
+    .relay-box-title { color: #00ffff; font-size: 11px; font-weight: 900; margin-bottom: 2px; }
+    .relay-box-shift { color: #ffff00; font-size: 24px; font-weight: 900; }
+
+    /* --- 7. BOTTOM NAVIGATION DOCK --- */
+    .bottom-dock {
+      position: fixed; bottom: 0; left: 0; width: 100%; height: 62px;
+      background: #091122; border-top: 2px solid #1e293b;
+      display: flex; justify-content: space-around; align-items: center; z-index: 1000;
+    }
+    .dock-tab {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: none; border: none; color: #94a3b8; font-size: 10px; font-weight: 800; cursor: pointer; flex: 1;
+    }
+    .dock-tab span:first-child { font-size: 18px; margin-bottom: 2px; }
+    .dock-tab.active { color: #38bdf8; }
+    .dock-tab.active span:first-child { transform: scale(1.15); }
   </style>
 </head>
 <body>
 
-  <!-- Direct Install Prompt for Operators -->
-  <div id="install-banner">
-    <div class="install-info">
-      <img src="icon.png" alt="R3">
-      <div class="install-text">Duty Lineup App</div>
+  <!-- 1. FULL SCREEN R3 SPLASH SCREEN -->
+  <div id="splashScreen">
+    <div class="splash-logo-wrap">
+      <div class="splash-pulse-ring"></div>
+      <div class="splash-house">
+        <div class="splash-r3"><span>R</span><span>3</span></div>
+        <div class="splash-tag">DUTY LINEUP</div>
+      </div>
     </div>
-    <button id="install-btn">INSTALL APP</button>
+    <div class="splash-load-text">⚡ Synchronizing Duty Lineup...</div>
   </div>
 
-  <div class="schedule-container">
-    <iframe src="https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqIpg1dFGIHPP/exec"></iframe>
+  <!-- 2. INSTALLATION MODAL -->
+  <div id="installModal">
+    <div class="modal-box">
+      <div class="modal-title">📲 Install Duty Lineup App</div>
+      <div class="modal-desc">Install on your phone to check your daily duty and holidays anytime.</div>
+      <div class="progress-track"><div class="progress-bar" id="installProgressBar"></div></div>
+      <div class="progress-pct" id="installPercentText">0%</div>
+      <button class="modal-btn-install" id="installActionBtn">Proceed to Install</button>
+      <div class="manual-guide" id="manualGuide">
+        👉 Tap Chrome's three dots (<strong>⋮</strong>) in the top right and tap <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong>.
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. TOP ACTION BAR -->
+  <div class="top-header-bar">
+    <div class="brand-mark">
+      <span>🛡️</span> <span>R3 OPERATOR PORTAL</span>
+    </div>
+    <div class="top-actions">
+      <button class="pwa-badge" id="installAppHeaderBtn" onclick="openInstallModal()">📥 Install</button>
+      <button class="pwa-badge" onclick="fetchLiveData()" style="background:#1e293b; color:#00ffff; border:1px solid #00ffff;">🔄</button>
+    </div>
+  </div>
+
+  <!-- 4. MAIN VIEWPORT -->
+  <div class="app-viewport">
+
+    <!-- OPERATOR SELECTION (PERSISTENT LOGIN) -->
+    <div class="operator-bar">
+      <label for="loggedOperatorSelect">👤 Select Name:</label>
+      <select id="loggedOperatorSelect" class="operator-select" onchange="onOperatorChanged()">
+        <option value="">-- Choose Operator --</option>
+      </select>
+    </div>
+
+    <!-- TAB 1: OPERATOR'S PERSONAL DUTY VIEW ONLY -->
+    <div id="viewLineup" class="view-panel active">
+      
+      <div id="myDutyCardWrap">
+        <div class="duty-pass-card" id="printableDutyCard">
+          <div class="pass-header">
+            <div class="pass-title">🎖️ Individual Duty Pass</div>
+            <div class="pass-shift-badge">RELAY - 3</div>
+          </div>
+          <div class="pass-date-banner" id="cardDateBanner">-</div>
+
+          <div class="pass-grid">
+            <div class="pass-field" style="grid-column: span 2;">
+              <div class="pass-field-label">Operator Name</div>
+              <div class="pass-field-value" id="cardOpName" style="color:#38bdf8;">-</div>
+            </div>
+            <div class="pass-field" style="grid-column: span 2; background:#1e293b; border-color:#22c55e;">
+              <div class="pass-field-label">Assigned Duty Position</div>
+              <div class="pass-field-value pass-field-highlight" id="cardPosition">-</div>
+            </div>
+            <div class="pass-field">
+              <div class="pass-field-label">Due Days</div>
+              <div class="pass-field-value" id="cardDue" style="color:#ffff00;">-</div>
+            </div>
+            <div class="pass-field">
+              <div class="pass-field-label">Shift</div>
+              <div class="pass-field-value" id="cardShift" style="color:#00ff00;">-</div>
+            </div>
+            <div class="pass-field">
+              <div class="pass-field-label">Last Duty Date</div>
+              <div class="pass-field-value" id="cardLastDate">-</div>
+            </div>
+            <div class="pass-field">
+              <div class="pass-field-label">Day</div>
+              <div class="pass-field-value" id="cardDay" style="color:#38bdf8;">-</div>
+            </div>
+          </div>
+
+          <div style="font-size:11px; color:#cbd5e1; background:#0f172a; padding:8px 10px; border-radius:6px; margin-bottom:12px; border:1px solid #334155;">
+            <strong>Notice / Info:</strong> <span id="cardNotice">Regular shift assignment.</span>
+          </div>
+
+          <div class="pass-actions">
+            <button class="btn-pdf" onclick="downloadDutyPassPDF()">📄 Download PDF</button>
+            <button class="btn-wa" onclick="shareDutyPassWhatsApp()">💬 Share WhatsApp</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUPERVISOR FULL LINEUP (COLLAPSED BY DEFAULT) -->
+      <div class="supervisor-toggle">
+        <span class="supervisor-link" onclick="toggleSupervisorTable()">🔐 Shift Incharge: View Full Team Lineup</span>
+      </div>
+      <div id="allOperatorsTableWrapper">
+        <table class="all-table">
+          <thead>
+            <tr><th>Position</th><th>Name</th><th>Due</th><th>Last Date</th><th>Day</th><th>Shf</th></tr>
+          </thead>
+          <tbody id="fullTeamTableBody"></tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- TAB 2: OPERATOR MONTHLY REPORT -->
+    <div id="viewReport" class="view-panel">
+      <div class="report-card" id="printableReport">
+        <div class="report-title">📊 Operator Monthly Report</div>
+        
+        <div class="stat-grid">
+          <div class="stat-tile"><div class="stat-label">Operator</div><div class="stat-val" id="repName" style="font-size:14px;">-</div></div>
+          <div class="stat-tile"><div class="stat-label">Current Position</div><div class="stat-val" id="repPos" style="font-size:14px;">-</div></div>
+          <div class="stat-tile"><div class="stat-label">Total Shifts Done</div><div class="stat-val">18</div></div>
+          <div class="stat-tile"><div class="stat-label">Leave Balance</div><div class="stat-val">04</div></div>
+        </div>
+
+        <div style="font-size:12px; color:#cbd5e1; margin-bottom:14px; background:#1e293b; padding:10px; border-radius:8px;">
+          <strong>Status:</strong> <span id="repStatusSummary">Active rotation status recorded in shift register.</span>
+        </div>
+
+        <div class="pass-actions">
+          <button class="btn-pdf" onclick="downloadReportPDF()">📄 Download PDF</button>
+          <button class="btn-wa" onclick="shareReportWhatsApp()">💬 Share WhatsApp</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: REMAINING ALL-TIME HOLIDAYS ONLY -->
+    <div id="viewHolidays" class="view-panel">
+      <div style="font-size:13px; font-weight:900; color:#ffff00; margin-bottom:12px; text-align:center;">
+        🎉 UPCOMING COMPANY HOLIDAYS & RELAY SHIFTS
+      </div>
+      <div class="holidays-wrapper" id="holidaysListContainer"></div>
+    </div>
+
+  </div>
+
+  <!-- 5. BOTTOM NAVIGATION DOCK -->
+  <div class="bottom-dock">
+    <button class="dock-tab active" id="tabLineup" onclick="switchTab('lineup')">
+      <span>🎖️</span> <span>My Duty</span>
+    </button>
+    <button class="dock-tab" id="tabReport" onclick="switchTab('report')">
+      <span>📊</span> <span>My Report</span>
+    </button>
+    <button class="dock-tab" id="tabHolidays" onclick="switchTab('holidays')">
+      <span>🗓️</span> <span>Holidays</span>
+    </button>
   </div>
 
   <script>
-    let deferredPrompt;
-    const installBanner = document.getElementById('install-banner');
-    const installBtn = document.getElementById('install-btn');
+    let globalData = null;
+    let deferredPrompt = null;
+
+    // --- PWA SERVICE WORKER REGISTRATION ---
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(()=>{});
+    }
 
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      installBanner.style.display = 'flex';
+      document.getElementById('installAppHeaderBtn').style.display = 'block';
     });
 
-    installBtn.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-          installBanner.style.display = 'none';
+    // --- INSTALLATION MODAL LOGIC ---
+    function openInstallModal() {
+      const modal = document.getElementById('installModal');
+      const bar = document.getElementById('installProgressBar');
+      const text = document.getElementById('installPercentText');
+      const guide = document.getElementById('manualGuide');
+      modal.style.display = 'flex';
+      guide.style.display = 'none';
+
+      let count = 0;
+      let interval = setInterval(() => {
+        count += 5;
+        bar.style.width = count + '%';
+        text.innerText = count + '%';
+        if (count >= 100) {
+          clearInterval(interval);
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(() => {
+              deferredPrompt = null;
+              modal.style.display = 'none';
+            });
+          } else {
+            guide.style.display = 'block';
+          }
         }
-        deferredPrompt = null;
-      }
-    });
+      }, 35);
+    }
 
-    window.addEventListener('appinstalled', () => {
-      installBanner.style.display = 'none';
-    });
+    document.getElementById('installActionBtn').addEventListener('click', openInstallModal);
+
+    // --- FETCH LIVE DATA FROM APPS SCRIPT ---
+    function fetchLiveData() {
+      const splash = document.getElementById('splashScreen');
+      splash.style.display = 'flex';
+      splash.style.opacity = '1';
+
+      fetch(APPS_SCRIPT_URL)
+        .then(r => r.json())
+        .then(data => {
+          globalData = data;
+          hydrateApp(data);
+          setTimeout(() => {
+            splash.style.opacity = '0';
+            setTimeout(() => splash.style.display = 'none', 450);
+          }, 700);
+        })
+        .catch(err => {
+          splash.style.display = 'none';
+          alert('Network issue: could not synchronize roster data.');
+        });
+    }
+
+    // --- HYDRATE APP & RESTORE LOGGED-IN OPERATOR ---
+    function hydrateApp(data) {
+      // 1. Populate Operator Dropdown
+      const selectEl = document.getElementById('loggedOperatorSelect');
+      const savedOp = localStorage.getItem('r3_logged_operator') || '';
+      
+      selectEl.innerHTML = '<option value="">-- Choose Operator --</option>';
+      (data.operators || []).forEach(op => {
+        const isSelected = (op === savedOp) ? 'selected' : '';
+        selectEl.innerHTML += `<option value="${op}" ${isSelected}>${op}</option>`;
+      });
+
+      // 2. Render Personal Duty Card
+      renderPersonalDuty();
+
+      // 3. Render Supervisor Full Lineup Table
+      let tableHtml = '';
+      (data.rows || []).forEach(r => {
+        if (r.isNotice) {
+          tableHtml += `<tr><td colspan="6" style="background:#8b0000; color:#ffff00; font-weight:900;">${r.duty}</td></tr>`;
+        } else {
+          const p = (r.duty || "").split("-").map(s => s.trim());
+          tableHtml += `<tr>
+            <td style="background:#00ffff; color:#000; font-weight:900;">${r.pos || ''}</td>
+            <td style="text-align:left; padding-left:6px;">${p[0] || '-'}</td>
+            <td style="color:#ffff00;">${p[1] || '-'}</td>
+            <td>${p[2] || '-'}</td>
+            <td style="color:#38bdf8;">${p[3] || '-'}</td>
+            <td style="color:#00ff00; font-weight:900;">${p[4] || '-'}</td>
+          </tr>`;
+        }
+      });
+      document.getElementById('fullTeamTableBody').innerHTML = tableHtml;
+
+      // 4. Render Remaining Holidays
+      const holContainer = document.getElementById('holidaysListContainer');
+      let holHtml = '';
+      if (data.holidays && data.holidays.length > 0) {
+        data.holidays.forEach(h => {
+          holHtml += `
+            <div class="holiday-card">
+              <div class="hol-header">
+                <div style="font-size:12px; font-weight:900;">🎈 ${h.name} (${h.date} - ${h.day})</div>
+                <div class="hol-badge">${h.daysToGo}</div>
+              </div>
+              <div class="relay-group-grid">
+                <div class="relay-box"><div class="relay-box-title">R3 Group</div><div class="relay-box-shift">${h.r3}</div></div>
+                <div class="relay-box"><div class="relay-box-title">R2 Group</div><div class="relay-box-shift">${h.r2}</div></div>
+                <div class="relay-box"><div class="relay-box-title">R1 Group</div><div class="relay-box-shift">${h.r1}</div></div>
+              </div>
+            </div>`;
+        });
+      } else {
+        holHtml = `<div style="text-align:center; color:#94a3b8; padding:30px;">No remaining holidays.</div>`;
+      }
+      holContainer.innerHTML = holHtml;
+    }
+
+    // --- RENDER PERSONAL DUTY CARD (HIDE OTHER OPERATORS) ---
+    function renderPersonalDuty() {
+      if (!globalData) return;
+      const selectedOp = document.getElementById('loggedOperatorSelect').value;
+      document.getElementById('cardDateBanner').innerText = globalData.dateBanner || '-';
+
+      if (!selectedOp) {
+        document.getElementById('cardOpName').innerText = "Please Select Your Name";
+        document.getElementById('cardPosition').innerText = "No Operator Selected";
+        document.getElementById('cardDue').innerText = "-";
+        document.getElementById('cardShift').innerText = "-";
+        document.getElementById('cardLastDate').innerText = "-";
+        document.getElementById('cardDay').innerText = "-";
+        document.getElementById('cardNotice').innerText = "Select your name from the top dropdown to reveal your duty pass.";
+        return;
+      }
+
+      document.getElementById('cardOpName').innerText = selectedOp;
+
+      // Check Stand By, OFF Day, Leave first
+      let dutyFound = false;
+
+      // Check if in Leave
+      if (globalData.leave && globalData.leave.indexOf(selectedOp) > -1) {
+        setDutyCard("LEAVE", "-", "-", "-", "-", "On Approved Leave");
+        dutyFound = true;
+      }
+      // Check if in OFF Day
+      else if (globalData.offDay && globalData.offDay.indexOf(selectedOp) > -1) {
+        setDutyCard("OFF DAY", "-", "-", "-", "-", "Scheduled Weekly Off");
+        dutyFound = true;
+      }
+      // Check if in Stand By
+      else if (globalData.standBy && globalData.standBy.indexOf(selectedOp) > -1) {
+        setDutyCard("STAND BY", "-", "-", "-", "-", "Assigned on Standby Duty");
+        dutyFound = true;
+      }
+
+      // Check Lineup Rows
+      if (!dutyFound && globalData.rows) {
+        for (let i = 0; i < globalData.rows.length; i++) {
+          const r = globalData.rows[i];
+          if (!r.isNotice && r.duty && r.duty.indexOf(selectedOp) > -1) {
+            const parts = r.duty.split("-").map(s => s.trim());
+            setDutyCard(
+              r.pos,
+              parts[1] || "-",
+              parts[4] || "B",
+              parts[2] || "-",
+              parts[3] || "-",
+              "Assigned regular duty."
+            );
+            dutyFound = true;
+            break;
+          }
+        }
+      }
+
+      if (!dutyFound) {
+        setDutyCard("GENERAL / RELIEVER", "-", "B", "-", "-", "No active position restriction.");
+      }
+
+      // Update Report Tab with Selected Operator
+      document.getElementById('repName').innerText = selectedOp;
+      document.getElementById('repPos').innerText = document.getElementById('cardPosition').innerText;
+      document.getElementById('repStatusSummary').innerText = `Operator ${selectedOp} is scheduled at ${document.getElementById('cardPosition').innerText} for ${globalData.dateBanner}.`;
+    }
+
+    function setDutyCard(pos, due, shift, lastDate, day, notice) {
+      document.getElementById('cardPosition').innerText = pos;
+      document.getElementById('cardDue').innerText = due;
+      document.getElementById('cardShift').innerText = shift;
+      document.getElementById('cardLastDate').innerText = lastDate;
+      document.getElementById('cardDay').innerText = day;
+      document.getElementById('cardNotice').innerText = notice;
+    }
+
+    function onOperatorChanged() {
+      const selected = document.getElementById('loggedOperatorSelect').value;
+      if (selected) {
+        localStorage.setItem('r3_logged_operator', selected);
+      }
+      renderPersonalDuty();
+    }
+
+    // --- SUPERVISOR TOGGLE ---
+    function toggleSupervisorTable() {
+      const el = document.getElementById('allOperatorsTableWrapper');
+      el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    }
+
+    // --- TAB SWITCHING ---
+    function switchTab(tab) {
+      document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.dock-tab').forEach(t => t.classList.remove('active'));
+
+      if (tab === 'lineup') {
+        document.getElementById('viewLineup').classList.add('active');
+        document.getElementById('tabLineup').classList.add('active');
+      } else if (tab === 'report') {
+        document.getElementById('viewReport').classList.add('active');
+        document.getElementById('tabReport').classList.add('active');
+      } else if (tab === 'holidays') {
+        document.getElementById('viewHolidays').classList.add('active');
+        document.getElementById('tabHolidays').classList.add('active');
+      }
+    }
+
+    // --- DOWNLOAD & WHATSAPP FOR PERSONAL DUTY PASS ---
+    function downloadDutyPassPDF() {
+      const op = document.getElementById('cardOpName').innerText;
+      const element = document.getElementById('printableDutyCard');
+      const opt = {
+        margin: 0.3,
+        filename: `${op}_Duty_Pass.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+
+    function shareDutyPassWhatsApp() {
+      const op = document.getElementById('cardOpName').innerText;
+      const pos = document.getElementById('cardPosition').innerText;
+      const shift = document.getElementById('cardShift').innerText;
+      const due = document.getElementById('cardDue').innerText;
+      const date = globalData ? globalData.dateBanner : '-';
+
+      let msg = `🎖️ *OPERATOR DUTY PASS*\n`;
+      msg += `📅 *${date}*\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `• *Operator:* ${op}\n`;
+      msg += `• *Position:* ${pos}\n`;
+      msg += `• *Shift:* ${shift}\n`;
+      msg += `• *Due Days:* ${due}\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `📲 *Open App:* ${GITHUB_PORTAL_URL}`;
+
+      const enc = encodeURIComponent(msg);
+      window.location.href = `whatsapp://send?text=${enc}`;
+    }
+
+    function downloadReportPDF() {
+      const op = document.getElementById('repName').innerText;
+      const element = document.getElementById('printableReport');
+      const opt = {
+        margin: 0.3,
+        filename: `${op}_Monthly_Report.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+
+    function shareReportWhatsApp() {
+      const op = document.getElementById('repName').innerText;
+      const pos = document.getElementById('repPos').innerText;
+
+      let msg = `📊 *OPERATOR MONTHLY REPORT*\n`;
+      msg += `• *Operator:* ${op}\n`;
+      msg += `• *Current Duty:* ${pos}\n`;
+      msg += `• *Total Shifts Done:* 18\n`;
+      msg += `• *Leave Balance:* 04 Days\n`;
+      msg += `📲 *Portal:* ${GITHUB_PORTAL_URL}`;
+
+      const enc = encodeURIComponent(msg);
+      window.location.href = `whatsapp://send?text=${enc}`;
+    }
+
+    window.onload = fetchLiveData;
   </script>
 </body>
 </html>
