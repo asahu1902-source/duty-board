@@ -22,7 +22,7 @@
       overflow: hidden;
     }
 
-    /* ROUNDED ICON SPLASH SCREEN */
+    /* FULL-SCREEN IMMERSIVE SPLASH */
     #splashScreen {
       position: fixed;
       top: 0;
@@ -35,62 +35,62 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.5s ease-out;
+      transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .splash-logo-container {
       position: relative;
-      width: 130px;
-      height: 130px;
+      width: 140px;
+      height: 140px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 24px;
+      margin-bottom: 28px;
     }
 
-    /* Rotating Neon Border Ring */
+    /* Continuous Rotating Neon Ring */
     .splash-pulse-ring {
       position: absolute;
-      width: 130px;
-      height: 130px;
+      width: 140px;
+      height: 140px;
       border-radius: 50%;
-      border: 3px dashed #00ffff;
-      animation: spin 5s linear infinite;
+      border: 3.5px dashed #00ffff;
+      animation: spinRing 4s linear infinite;
     }
 
     /* Rounded App Icon */
     .splash-app-icon {
-      width: 100px;
-      height: 100px;
+      width: 108px;
+      height: 108px;
       border-radius: 50%;
       object-fit: cover;
       border: 3px solid #facc15;
-      box-shadow: 0 0 25px rgba(250, 204, 21, 0.45);
+      box-shadow: 0 0 30px rgba(250, 204, 21, 0.5);
       z-index: 2;
       background: #0b1e42;
     }
 
-    /* Synchronizing Text */
+    /* Synchronizing Text with Pulsing Glow */
     .splash-load-text {
       color: #00ffff;
       font-size: 14px;
       font-weight: 800;
-      letter-spacing: 0.8px;
+      letter-spacing: 1px;
       text-transform: uppercase;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      animation: pulseText 1s ease-in-out infinite alternate;
+      animation: textPulse 1.2s ease-in-out infinite alternate;
     }
 
-    @keyframes spin {
+    @keyframes spinRing {
       100% { transform: rotate(360deg); }
     }
 
-    @keyframes pulseText {
-      0% { opacity: 0.4; }
-      100% { opacity: 1; }
+    @keyframes textPulse {
+      0% { opacity: 0.45; transform: scale(0.98); }
+      100% { opacity: 1; transform: scale(1.02); text-shadow: 0 0 12px rgba(0, 255, 255, 0.8); }
     }
 
-    /* Live Duty Board Frame */
+    /* Embedded Live Board */
     #dutyFrame {
       width: 100%;
       height: 100%;
@@ -111,26 +111,39 @@
     <div class="splash-load-text">⚡ Synchronizing Duty Lineup...</div>
   </div>
 
-  <!-- Live Board Frame -->
+  <!-- Live Duty Lineup Backend -->
   <iframe 
     id="dutyFrame" 
     src="https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqIpg1dFGIHPP/exec"
     allow="clipboard-write;"
-    sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
-    onload="hideSplashScreen()">
+    sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
   </iframe>
 
   <script>
-    function hideSplashScreen() {
-      // Gives the iframe 800ms to visually settle before sliding away
+    // Holds the splash screen open until Google Apps Script completes backend rendering
+    const MIN_DISPLAY_TIME = 2500; // 2.5 seconds minimum to ensure full backend sheet sync
+    const pageStartTime = Date.now();
+
+    function dismissSplashWhenReady() {
+      const elapsed = Date.now() - pageStartTime;
+      const remainingWait = Math.max(0, MIN_DISPLAY_TIME - elapsed);
+
       setTimeout(() => {
         const splash = document.getElementById('splashScreen');
         if (splash) {
           splash.style.opacity = '0';
-          setTimeout(() => { splash.style.display = 'none'; }, 500);
+          setTimeout(() => {
+            splash.style.display = 'none';
+          }, 600);
         }
-      }, 800);
+      }, remainingWait);
     }
+
+    const frame = document.getElementById('dutyFrame');
+    frame.addEventListener('load', dismissSplashWhenReady);
+
+    // Fallback safety trigger in case iframe load event is delayed
+    setTimeout(dismissSplashWhenReady, 4000);
   </script>
 
 </body>
