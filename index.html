@@ -420,7 +420,7 @@
   <div class="holiday-cluster-wrapper" id="holidayClusterWrapper"></div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqIpg1dFGIHPP/exec";
+    const RAW_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqIpg1dFGIHPP/exec";
     let globalWhatsAppText = "";
 
     async function loadSheetData() {
@@ -428,15 +428,15 @@
       splash.style.display = 'flex';
       splash.style.opacity = '1';
 
+      // Bypass CORS blocks via high-speed proxy
+      const targetUrl = 'https://corsproxy.io/?' + encodeURIComponent(RAW_APPS_SCRIPT + '?t=' + Date.now());
+
       try {
-        const response = await fetch(SCRIPT_URL + '?t=' + Date.now(), {
-          method: 'GET',
-          redirect: 'follow'
-        });
-        const data = await response.json();
+        const res = await fetch(targetUrl);
+        const data = await res.json();
         renderBoard(data);
       } catch (err) {
-        console.error("Fetch failed", err);
+        console.error("Fetch Error:", err);
       } finally {
         setTimeout(() => {
           splash.style.opacity = '0';
