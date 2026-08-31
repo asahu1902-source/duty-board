@@ -5,14 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>R3 Operator Duty Portal</title>
   
-  <!-- FAVICON ICONS -->
   <link rel="icon" type="image/png" href="icon.png">
   <link rel="shortcut icon" type="image/png" href="icon.png">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#060d1d">
 
-  <!-- PDF EXPORT SCRIPT -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <script>
@@ -24,7 +22,6 @@
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
     body { background-color: #060d1d; color: #ffffff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 75px; }
 
-    /* --- 1. FULL-SCREEN R3 SPLASH SCREEN --- */
     #splashScreen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-color: #060d1d; z-index: 100000;
@@ -60,7 +57,6 @@
     @keyframes spin { 100% { transform: rotate(360deg); } }
     @keyframes pulseText { 0% { opacity: 0.4; } 100% { opacity: 1; } }
 
-    /* --- 2. INSTALL POPUP MODAL --- */
     #installModal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); z-index: 100001;
@@ -88,7 +84,6 @@
       padding: 8px; border-radius: 6px; border: 1px dashed #facc15; margin-top: 10px; text-align: left;
     }
 
-    /* --- 3. TOP ACTION BAR --- */
     .top-header-bar {
       width: 100%; max-width: 480px; background: #0b1329; border-bottom: 2px solid #1e293b;
       padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50;
@@ -100,12 +95,10 @@
       font-size: 10px; font-weight: 900; padding: 5px 8px; cursor: pointer;
     }
 
-    /* --- 4. VIEWPORT & PERSONALIZED DUTY CARD --- */
     .app-viewport { width: 100%; max-width: 480px; padding: 12px 8px; }
     .view-panel { display: none; }
     .view-panel.active { display: block; }
 
-    /* OPERATOR IDENTITY BAR */
     .operator-bar {
       background: #0f172a; border: 2px solid #38bdf8; border-radius: 10px;
       padding: 10px 12px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -116,7 +109,6 @@
       border-radius: 6px; padding: 6px 8px; font-size: 13px; font-weight: 800; width: 100%; outline: none;
     }
 
-    /* PERSONAL DUTY PASS CARD */
     .duty-pass-card {
       background: linear-gradient(180deg, #0b1e42 0%, #060d1d 100%);
       border: 3px solid #22c55e; border-radius: 14px; padding: 16px;
@@ -139,7 +131,6 @@
     .pass-field-value { font-size: 16px; font-weight: 900; color: #ffffff; word-break: break-word; }
     .pass-field-highlight { color: #facc15; font-size: 20px; }
 
-    /* ACTION BUTTONS WITH SVG ICONS */
     .pass-actions { display: flex; gap: 10px; }
     .btn-action {
       flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -157,17 +148,14 @@
     }
     .btn-icon { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
 
-    /* SUPERVISOR VIEW TOGGLE */
     .supervisor-toggle { text-align: center; margin-top: 10px; }
     .supervisor-link { color: #64748b; font-size: 11px; text-decoration: underline; cursor: pointer; font-weight: 700; }
 
-    /* FULL TEAM TABLE (SUPERVISOR) */
     #allOperatorsTableWrapper { display: none; margin-top: 16px; border: 2px solid #facc15; border-radius: 8px; overflow: hidden; }
     .all-table { width: 100%; border-collapse: collapse; font-size: 11px; }
     .all-table th { background: #facc15; color: #000; padding: 6px; font-weight: 900; text-align: center; }
     .all-table td { padding: 6px; border: 1px solid #334155; text-align: center; font-weight: 700; }
 
-    /* --- 5. REPORT VIEW --- */
     .report-card { background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 14px; }
     .report-title { font-size: 14px; font-weight: 900; color: #38bdf8; margin-bottom: 12px; text-transform: uppercase; text-align: center; }
     .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
@@ -175,7 +163,6 @@
     .stat-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; }
     .stat-val { font-size: 18px; font-weight: 900; color: #facc15; }
 
-    /* --- 6. HOLIDAYS VIEW --- */
     .holidays-wrapper { display: flex; flex-direction: column; gap: 12px; }
     .holiday-card { border: 2px solid #ef4444; border-radius: 10px; background: #000000; padding: 9px; }
     .hol-header {
@@ -191,7 +178,6 @@
     .relay-box-title { color: #00ffff; font-size: 11px; font-weight: 900; margin-bottom: 2px; }
     .relay-box-shift { color: #ffff00; font-size: 24px; font-weight: 900; }
 
-    /* --- 7. BOTTOM NAVIGATION DOCK --- */
     .bottom-dock {
       position: fixed; bottom: 0; left: 0; width: 100%; height: 62px;
       background: #091122; border-top: 2px solid #1e293b;
@@ -208,7 +194,6 @@
 </head>
 <body>
 
-  <!-- 1. FULL SCREEN R3 SPLASH SCREEN -->
   <div id="splashScreen">
     <div class="splash-logo-wrap">
       <div class="splash-pulse-ring"></div>
@@ -220,7 +205,6 @@
     <div class="splash-load-text">⚡ Synchronizing Duty Lineup...</div>
   </div>
 
-  <!-- 2. INSTALLATION MODAL -->
   <div id="installModal">
     <div class="modal-box">
       <div class="modal-title">📲 Install Duty Lineup App</div>
@@ -234,7 +218,6 @@
     </div>
   </div>
 
-  <!-- 3. TOP ACTION BAR -->
   <div class="top-header-bar">
     <div class="brand-mark">
       <span>🛡️</span> <span>R3 OPERATOR PORTAL</span>
@@ -245,10 +228,7 @@
     </div>
   </div>
 
-  <!-- 4. MAIN VIEWPORT -->
   <div class="app-viewport">
-
-    <!-- OPERATOR SELECTION -->
     <div class="operator-bar">
       <label for="loggedOperatorSelect">👤 Select Name:</label>
       <select id="loggedOperatorSelect" class="operator-select" onchange="onOperatorChanged()">
@@ -256,9 +236,7 @@
       </select>
     </div>
 
-    <!-- TAB 1: INDIVIDUAL DUTY PASS VIEW ONLY -->
     <div id="viewLineup" class="view-panel active">
-      
       <div id="myDutyCardWrap">
         <div class="duty-pass-card" id="printableDutyCard">
           <div class="pass-header">
@@ -298,7 +276,6 @@
             <strong>Notice / Info:</strong> <span id="cardNotice">Regular shift assignment.</span>
           </div>
 
-          <!-- ICON BUTTONS -->
           <div class="pass-actions">
             <button class="btn-action btn-pdf" onclick="downloadDutyPassPDF()">
               <svg class="btn-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.5 8.5c0 .83-.67 1.5-1.5 1.5H7v2H5.5V9H8c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V9H13c.83 0 1.5.67 1.5 1.5v3zm4-3H17v1h1.5V13H17v2h-1.5V9h3v1.5zM7 10.5h1v1H7v-1zm4.5 0h1v3h-1v-3z"/></svg>
@@ -312,7 +289,6 @@
         </div>
       </div>
 
-      <!-- SUPERVISOR FULL LINEUP -->
       <div class="supervisor-toggle">
         <span class="supervisor-link" onclick="toggleSupervisorTable()">🔐 Shift Incharge: View Full Team Lineup</span>
       </div>
@@ -324,10 +300,8 @@
           <tbody id="fullTeamTableBody"></tbody>
         </table>
       </div>
-
     </div>
 
-    <!-- TAB 2: OPERATOR MONTHLY REPORT -->
     <div id="viewReport" class="view-panel">
       <div class="report-card" id="printableReport">
         <div class="report-title">📊 Operator Monthly Report</div>
@@ -356,17 +330,14 @@
       </div>
     </div>
 
-    <!-- TAB 3: REMAINING HOLIDAYS ONLY -->
     <div id="viewHolidays" class="view-panel">
       <div style="font-size:13px; font-weight:900; color:#ffff00; margin-bottom:12px; text-align:center;">
         🎉 UPCOMING COMPANY HOLIDAYS & RELAY SHIFTS
       </div>
       <div class="holidays-wrapper" id="holidaysListContainer"></div>
     </div>
-
   </div>
 
-  <!-- 5. BOTTOM NAVIGATION DOCK -->
   <div class="bottom-dock">
     <button class="dock-tab active" id="tabLineup" onclick="switchTab('lineup')">
       <span>🎖️</span> <span>My Duty</span>
@@ -423,15 +394,18 @@
 
     document.getElementById('installActionBtn').addEventListener('click', openInstallModal);
 
-    // --- BULLETPROOF HYBRID FETCHER ---
     function fetchLiveData() {
       const splash = document.getElementById('splashScreen');
       splash.style.display = 'flex';
       splash.style.opacity = '1';
 
-      // 1. JSONP Loader (Directly reads the payload from your screenshot)
       window.handleRosterResponse = function(data) {
-        processReceivedData(data);
+        globalData = data;
+        hydrateApp(data);
+        setTimeout(() => {
+          splash.style.opacity = '0';
+          setTimeout(() => splash.style.display = 'none', 450);
+        }, 500);
       };
 
       const existingScript = document.getElementById('jsonpLoaderScript');
@@ -442,27 +416,11 @@
       script.src = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf('?') > -1 ? '&' : '?') + 'callback=handleRosterResponse&t=' + Date.now();
       
       script.onerror = function() {
-        // 2. Fetch with Follow-Redirects if JSONP is blocked by browser shield
-        fetch(APPS_SCRIPT_URL, { method: 'GET', redirect: 'follow' })
-          .then(res => res.json())
-          .then(data => processReceivedData(data))
-          .catch(err => {
-            splash.style.display = 'none';
-            alert('Could not synchronize: please disable ad-blocker or brave shield for duty-board.');
-          });
+        splash.style.display = 'none';
+        alert('Could not sync data. Ensure internet connection is active.');
       };
 
       document.body.appendChild(script);
-    }
-
-    function processReceivedData(data) {
-      const splash = document.getElementById('splashScreen');
-      globalData = data;
-      hydrateApp(data);
-      setTimeout(() => {
-        splash.style.opacity = '0';
-        setTimeout(() => splash.style.display = 'none', 450);
-      }, 500);
     }
 
     function hydrateApp(data) {
