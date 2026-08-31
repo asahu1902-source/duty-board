@@ -20,23 +20,11 @@
       height: 100%;
       background-color: #07142b;
       overflow: hidden;
-    }
-
-    /* SPLASH SCREEN MATCHING YOUR LOGO BACKGROUND */
-    #splashScreen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #07142b;
-      z-index: 999999;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.5s ease-out;
-      pointer-events: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     }
 
     .splash-logo-container {
@@ -49,14 +37,14 @@
       margin-bottom: 25px;
     }
 
-    /* Rotating Neon Border Ring */
+    /* Rotating Yellow Dashed Ring */
     .splash-pulse-ring {
       position: absolute;
       width: 150px;
       height: 150px;
       border-radius: 50%;
       border: 3.5px dashed #facc15;
-      animation: spinRing 3s linear infinite;
+      animation: spinRing 2.5s linear infinite;
     }
 
     /* Rounded App Icon */
@@ -71,15 +59,15 @@
       background: #07142b;
     }
 
-    /* Synchronizing Text with Glowing Cyan */
+    /* Synchronizing Text */
     .splash-load-text {
       color: #00ffff;
       font-size: 14px;
       font-weight: 800;
       letter-spacing: 1px;
       text-transform: uppercase;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       animation: textPulse 1s ease-in-out infinite alternate;
+      text-align: center;
     }
 
     @keyframes spinRing {
@@ -90,49 +78,26 @@
       0%   { opacity: 0.5; transform: scale(0.98); }
       100% { opacity: 1; transform: scale(1.02); text-shadow: 0 0 14px rgba(0, 255, 255, 0.9); }
     }
-
-    /* Live Duty Board Frame */
-    #dutyFrame {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-      background-color: #000000;
-    }
   </style>
+
+  <script>
+    // Direct destination URL
+    const TARGET_URL = "https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqIpg1dFGIHPP/exec";
+
+    // Allow the operator to see the rotating sync animation briefly, then navigate directly
+    setTimeout(function() {
+      window.location.replace(TARGET_URL);
+    }, 1200);
+  </script>
 </head>
 <body>
 
-  <!-- App Icon Splash Screen -->
-  <div id="splashScreen">
-    <div class="splash-logo-container">
-      <div class="splash-pulse-ring"></div>
-      <img src="icon.png" alt="App Icon" class="splash-app-icon" onerror="this.src='https://asahu1902-source.github.io/duty-board/icon.png'">
-    </div>
-    <div class="splash-load-text">⚡ Synchronizing Duty Lineup...</div>
+  <div class="splash-logo-container">
+    <div class="splash-pulse-ring"></div>
+    <img src="icon.png" alt="App Icon" class="splash-app-icon" onerror="this.src='https://asahu1902-source.github.io/duty-board/icon.png'">
   </div>
-
-  <!-- Live Duty Board -->
-  <iframe 
-    id="dutyFrame" 
-    src="https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqIpg1dFGIHPP/exec"
-    allow="clipboard-write;">
-  </iframe>
-
-  <script>
-    // Gives Google Apps Script 2.8 seconds to compile sheet formulas, then reveals the live board
-    window.addEventListener('DOMContentLoaded', function() {
-      setTimeout(function() {
-        const splash = document.getElementById('splashScreen');
-        if (splash) {
-          splash.style.opacity = '0';
-          setTimeout(function() {
-            splash.style.display = 'none';
-          }, 500);
-        }
-      }, 2800);
-    });
-  </script>
+  
+  <div class="splash-load-text">⚡ Synchronizing Duty Lineup...</div>
 
 </body>
 </html>
