@@ -232,7 +232,7 @@
     <div class="operator-bar">
       <label for="loggedOperatorSelect">👤 Select Name:</label>
       <select id="loggedOperatorSelect" class="operator-select" onchange="onOperatorChanged()">
-        <option value="">-- Choose Operator --</option>
+        <option value="">-- Loading Operators... --</option>
       </select>
     </div>
 
@@ -397,32 +397,42 @@
 
     document.getElementById('installActionBtn').addEventListener('click', openInstallModal);
 
-    // DIRECT JSONP RETRIEVAL: BYPASSES ALL CORS & REDIRECT ISSUES
+    // --- UNIVERSAL DATA RETRIEVAL (Bypasses Browser Tracking Shields) ---
     function fetchLiveData() {
       const splash = document.getElementById('splashScreen');
       splash.style.display = 'flex';
       splash.style.opacity = '1';
 
+      // Global receiver function for JSONP
       window.handleRosterResponse = function(data) {
+        if (!data) return;
         globalData = data;
         hydrateApp(data);
         setTimeout(() => {
           splash.style.opacity = '0';
           setTimeout(() => splash.style.display = 'none', 450);
-        }, 400);
+        }, 300);
       };
 
-      const old = document.getElementById('jsonpCall');
-      if (old) old.remove();
-
+      // Method 1: Standard Script Tag
       const s = document.createElement('script');
-      s.id = 'jsonpCall';
       s.src = APPS_SCRIPT_URL + '?callback=handleRosterResponse&t=' + Date.now();
+      
+      // Method 2: Public Proxy Fallback if Browser Shield blocks Script
       s.onerror = function() {
-        splash.style.display = 'none';
-        alert('Data sync failed. Please check internet connection.');
+        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(APPS_SCRIPT_URL);
+        fetch(proxyUrl)
+          .then(res => res.json())
+          .then(data => {
+            window.handleRosterResponse(data);
+          })
+          .catch(() => {
+            splash.style.display = 'none';
+            alert('Please tap the Shield/Eye icon on your browser address bar and turn Shields OFF.');
+          });
       };
-      document.head.appendChild(s);
+
+      document.body.appendChild(s);
     }
 
     function hydrateApp(data) {
