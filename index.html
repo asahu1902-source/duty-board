@@ -232,10 +232,11 @@
     <div class="operator-bar">
       <label for="loggedOperatorSelect">👤 Select Name:</label>
       <select id="loggedOperatorSelect" class="operator-select" onchange="onOperatorChanged()">
-        <option value="">-- Loading Operators... --</option>
+        <option value="">-- Choose Operator --</option>
       </select>
     </div>
 
+    <!-- TAB 1: INDIVIDUAL DUTY PASS VIEW -->
     <div id="viewLineup" class="view-panel active">
       <div id="myDutyCardWrap">
         <div class="duty-pass-card" id="printableDutyCard">
@@ -302,6 +303,7 @@
       </div>
     </div>
 
+    <!-- TAB 2: OPERATOR MONTHLY REPORT -->
     <div id="viewReport" class="view-panel">
       <div class="report-card" id="printableReport">
         <div class="report-title">📊 Operator Monthly Report</div>
@@ -330,6 +332,7 @@
       </div>
     </div>
 
+    <!-- TAB 3: REMAINING HOLIDAYS -->
     <div id="viewHolidays" class="view-panel">
       <div style="font-size:13px; font-weight:900; color:#ffff00; margin-bottom:12px; text-align:center;">
         🎉 UPCOMING COMPANY HOLIDAYS & RELAY SHIFTS
@@ -394,33 +397,37 @@
 
     document.getElementById('installActionBtn').addEventListener('click', openInstallModal);
 
+    // NATIVE FETCH WITH REDIRECT & TEXT PARSER
     function fetchLiveData() {
       const splash = document.getElementById('splashScreen');
       splash.style.display = 'flex';
       splash.style.opacity = '1';
 
-      window.handleRosterResponse = function(data) {
+      fetch(APPS_SCRIPT_URL, {
+        method: 'GET',
+        redirect: 'follow'
+      })
+      .then(res => res.text())
+      .then(text => {
+        let cleanText = text.trim();
+        // Unwrap handleRosterResponse(...) if returned by Apps Script JSONP
+        if (cleanText.startsWith('handleRosterResponse(') && cleanText.endsWith(');')) {
+          cleanText = cleanText.substring(21, cleanText.length - 2);
+        } else if (cleanText.startsWith('handleRosterResponse(') && cleanText.endsWith(')')) {
+          cleanText = cleanText.substring(21, cleanText.length - 1);
+        }
+        const data = JSON.parse(cleanText);
         globalData = data;
         hydrateApp(data);
         setTimeout(() => {
           splash.style.opacity = '0';
           setTimeout(() => splash.style.display = 'none', 450);
         }, 500);
-      };
-
-      const existingScript = document.getElementById('jsonpLoaderScript');
-      if (existingScript) existingScript.remove();
-
-      const script = document.createElement('script');
-      script.id = 'jsonpLoaderScript';
-      script.src = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf('?') > -1 ? '&' : '?') + 'callback=handleRosterResponse&t=' + Date.now();
-      
-      script.onerror = function() {
+      })
+      .catch(err => {
         splash.style.display = 'none';
-        alert('Could not sync data. Ensure internet connection is active.');
-      };
-
-      document.body.appendChild(script);
+        alert('Network connection error: ' + err.message);
+      });
     }
 
     function hydrateApp(data) {
