@@ -27,7 +27,7 @@
       padding: 8px 6px 30px 6px;
     }
 
-    /* NAVY SPLASH SCREEN WITH ROUNDED LOGO */
+    /* DEEP NAVY SPLASH SCREEN MATCHING YOUR LOGO */
     #splashScreen {
       position: fixed;
       top: 0;
@@ -91,7 +91,7 @@
       100% { opacity: 1; transform: scale(1.02); text-shadow: 0 0 14px rgba(0, 255, 255, 0.9); }
     }
 
-    /* DUTY BOARD STYLING */
+    /* BOARD STYLING */
     .board-container {
       width: 100%;
       max-width: 480px;
@@ -420,32 +420,11 @@
   <div class="holiday-cluster-wrapper" id="holidayClusterWrapper"></div>
 
   <script>
-    const RAW_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqIpg1dFGIHPP/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqIpg1dFGIHPP/exec";
     let globalWhatsAppText = "";
 
-    async function loadSheetData() {
-      const splash = document.getElementById('splashScreen');
-      splash.style.display = 'flex';
-      splash.style.opacity = '1';
-
-      // Bypass CORS blocks via high-speed proxy
-      const targetUrl = 'https://corsproxy.io/?' + encodeURIComponent(RAW_APPS_SCRIPT + '?t=' + Date.now());
-
-      try {
-        const res = await fetch(targetUrl);
-        const data = await res.json();
-        renderBoard(data);
-      } catch (err) {
-        console.error("Fetch Error:", err);
-      } finally {
-        setTimeout(() => {
-          splash.style.opacity = '0';
-          setTimeout(() => { splash.style.display = 'none'; }, 400);
-        }, 500);
-      }
-    }
-
-    function renderBoard(data) {
+    // Global Receiver Callback
+    window.handleDutyData = function(data) {
       if (!data) return;
 
       document.getElementById('uiMainTitle').innerText = data.mainTitle || 'DAILY OPERATOR DUTY LINEUP';
@@ -503,6 +482,29 @@
         holHeader.style.display = 'none';
         holWrapper.innerHTML = '';
       }
+
+      // Smoothly hide splash screen
+      const splash = document.getElementById('splashScreen');
+      setTimeout(() => {
+        splash.style.opacity = '0';
+        setTimeout(() => { splash.style.display = 'none'; }, 400);
+      }, 400);
+    };
+
+    function loadSheetData() {
+      const splash = document.getElementById('splashScreen');
+      splash.style.display = 'flex';
+      splash.style.opacity = '1';
+
+      // Clean up previous script element
+      const old = document.getElementById('jsonpLoader');
+      if (old) old.remove();
+
+      // Inject clean JSONP call
+      const s = document.createElement('script');
+      s.id = 'jsonpLoader';
+      s.src = SCRIPT_URL + '?callback=handleDutyData&t=' + Date.now();
+      document.body.appendChild(s);
     }
 
     function shareToWhatsApp() {
