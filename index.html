@@ -4,12 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>R3 Operator Duty Portal</title>
+  
+  <!-- FIX WORLD ICON: DIRECT FAVICON LINKS -->
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="shortcut icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#060d1d">
-  <!-- html2pdf for direct PDF export -->
+
+  <!-- html2pdf for Direct PDF Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <script>
+    // YOUR LIVE APPS SCRIPT URL
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqlpg1dFGIHPP/exec';
     const GITHUB_PORTAL_URL = 'https://asahu1902-source.github.io/duty-board/';
   </script>
@@ -292,7 +299,7 @@
             <strong>Notice / Info:</strong> <span id="cardNotice">Regular shift assignment.</span>
           </div>
 
-          <!-- ICON BUTTONS FOR PDF AND WHATSAPP -->
+          <!-- ICON BUTTONS -->
           <div class="pass-actions">
             <button class="btn-action btn-pdf" onclick="downloadDutyPassPDF()">
               <svg class="btn-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.5 8.5c0 .83-.67 1.5-1.5 1.5H7v2H5.5V9H8c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V9H13c.83 0 1.5.67 1.5 1.5v3zm4-3H17v1h1.5V13H17v2h-1.5V9h3v1.5zM7 10.5h1v1H7v-1zm4.5 0h1v3h-1v-3z"/></svg>
@@ -306,7 +313,7 @@
         </div>
       </div>
 
-      <!-- SUPERVISOR FULL LINEUP (COLLAPSED BY DEFAULT) -->
+      <!-- SUPERVISOR FULL LINEUP -->
       <div class="supervisor-toggle">
         <span class="supervisor-link" onclick="toggleSupervisorTable()">🔐 Shift Incharge: View Full Team Lineup</span>
       </div>
@@ -417,23 +424,33 @@
 
     document.getElementById('installActionBtn').addEventListener('click', openInstallModal);
 
-    // --- JSONP DATA LOADER (BYPASSES BROWSER CORS RESTRICTION) ---
+    // --- HYBRID DATA FETCHER (Direct Fetch + JSONP Fallback) ---
     function fetchLiveData() {
       const splash = document.getElementById('splashScreen');
       splash.style.display = 'flex';
       splash.style.opacity = '1';
 
-      // Define global JSONP callback
+      // 1. Try modern Fetch API first
+      fetch(APPS_SCRIPT_URL)
+        .then(response => {
+          if (!response.ok) throw new Error('HTTP status ' + response.status);
+          return response.json();
+        })
+        .then(data => {
+          processReceivedData(data);
+        })
+        .catch(() => {
+          // 2. Seamless Fallback to JSONP if browser enforces strict CORS
+          loadViaJSONP();
+        });
+    }
+
+    function loadViaJSONP() {
+      const splash = document.getElementById('splashScreen');
       window.handleRosterResponse = function(data) {
-        globalData = data;
-        hydrateApp(data);
-        setTimeout(() => {
-          splash.style.opacity = '0';
-          setTimeout(() => splash.style.display = 'none', 450);
-        }, 600);
+        processReceivedData(data);
       };
 
-      // Inject script tag for JSONP
       const existingScript = document.getElementById('jsonpLoaderScript');
       if (existingScript) existingScript.remove();
 
@@ -442,9 +459,19 @@
       script.src = APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf('?') > -1 ? '&' : '?') + 'callback=handleRosterResponse&t=' + Date.now();
       script.onerror = function() {
         splash.style.display = 'none';
-        alert('Network issue: could not synchronize roster data.');
+        alert('Could not sync data. Ensure Apps Script deployment access is set to "Anyone".');
       };
       document.body.appendChild(script);
+    }
+
+    function processReceivedData(data) {
+      const splash = document.getElementById('splashScreen');
+      globalData = data;
+      hydrateApp(data);
+      setTimeout(() => {
+        splash.style.opacity = '0';
+        setTimeout(() => splash.style.display = 'none', 450);
+      }, 500);
     }
 
     function hydrateApp(data) {
