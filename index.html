@@ -27,6 +27,7 @@
       padding: 8px 6px 30px 6px;
     }
 
+    /* DEEP NAVY SPLASH SCREEN MATCHING YOUR LOGO */
     #splashScreen {
       position: fixed;
       top: 0;
@@ -90,6 +91,7 @@
       100% { opacity: 1; transform: scale(1.02); text-shadow: 0 0 14px rgba(0, 255, 255, 0.9); }
     }
 
+    /* BOARD STYLING */
     .board-container {
       width: 100%;
       max-width: 480px;
@@ -153,6 +155,7 @@
       cursor: pointer;
     }
 
+    /* EXTRA LARGE HIGH-VISIBILITY WHATSAPP BUTTON */
     .whatsapp-btn {
       background: #25D366;
       color: #ffffff;
@@ -356,6 +359,7 @@
       border: 1px solid #ef4444;
     }
 
+    /* HIGH-VISIBILITY PULSING COUNTDOWN BADGE */
     .animated-countdown-badge {
       background-color: #facc15 !important;
       color: #000000 !important;
@@ -376,6 +380,12 @@
       0%   { transform: scale(1); box-shadow: 0 0 6px rgba(250, 204, 21, 0.6); }
       50%  { transform: scale(1.14); box-shadow: 0 0 20px rgba(250, 204, 21, 1); }
       100% { transform: scale(1); box-shadow: 0 0 6px rgba(250, 204, 21, 0.6); }
+    }
+
+    @-webkit-keyframes badgePulse {
+      0%   { -webkit-transform: scale(1); box-shadow: 0 0 6px rgba(250, 204, 21, 0.6); }
+      50%  { -webkit-transform: scale(1.14); box-shadow: 0 0 20px rgba(250, 204, 21, 1); }
+      100% { -webkit-transform: scale(1); box-shadow: 0 0 6px rgba(250, 204, 21, 0.6); }
     }
 
     .relay-cards-grid {
@@ -492,7 +502,7 @@
       });
 
       tbodyHtml += `
-        <tr><td class="cyan-label-cell">Available</td><td class="summary-center-cell">${data.availableCount || '0'}</td><td colspan="2" class="cyan-label-cell">Stand By</td><td colspan="2">${data.standBy || '-'}</td></tr>
+        <tr><td class="cyan-label-cell">Available</td><td class="summary-center-cell">${data.availableCount || '0'}</td><td colspan="2" class="cyan-label-cell">Stand By</td><td colspan="2" class="summary-center-cell">${data.standBy || '-'}</td></tr>
         <tr><td class="cyan-label-cell">OFF Day</td><td colspan="5" class="summary-val-cell">${data.offDay || 'None'}</td></tr>
         <tr><td class="cyan-label-cell">Leave</td><td colspan="5" class="summary-val-cell">${data.leave || 'None'}</td></tr>
         <tr><td class="cyan-label-cell">Info</td><td colspan="5" class="summary-val-cell">${data.info || '-'}</td></tr>
