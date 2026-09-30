@@ -79,6 +79,29 @@
       text-decoration: underline;
     }
 
+    /* GLOWING ACTION BUTTON */
+    @keyframes glowingAnim {
+      0% { box-shadow: 0 0 5px #10b981, 0 0 10px #10b981, 0 0 15px #10b981; }
+      50% { box-shadow: 0 0 15px #34d399, 0 0 25px #34d399, 0 0 35px #34d399; }
+      100% { box-shadow: 0 0 5px #10b981, 0 0 10px #10b981, 0 0 15px #10b981; }
+    }
+
+    .btn-glowing-link {
+      display: block;
+      width: 100%;
+      background: linear-gradient(90deg, #059669, #10b981);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 900;
+      padding: 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      text-transform: uppercase;
+      animation: glowingAnim 2s infinite ease-in-out;
+      border: 2px solid #facc15;
+      text-align: center;
+    }
+
     .btn-deactive-ok {
       width: 100%;
       background: linear-gradient(90deg, #dc2626, #b91c1c);
@@ -484,6 +507,7 @@
       <div id="deactiveMsgBody" class="deactive-msg-content">
         Please follow new app. This app is temporarily stopped.
       </div>
+      <div id="deactiveButtonArea" style="width: 100%;"></div>
       <button class="btn-deactive-ok" onclick="exitOrBackApp()">OK</button>
     </div>
   </div>
@@ -565,18 +589,24 @@
 
       // CHECK IF APP IS DEACTIVE
       const modal = document.getElementById('fullScreenDeactiveModal');
+      const btnArea = document.getElementById('deactiveButtonArea');
+
       if (data.appStatus && data.appStatus.toLowerCase() === "deactive") {
         if (data.deactiveMessages && data.deactiveMessages.length > 0) {
           let formattedHtml = "";
           data.deactiveMessages.forEach(line => {
-            if (line.startsWith("http://") || line.startsWith("https://")) {
-              formattedHtml += `<br><a href="${line}" target="_blank">${line}</a>`;
-            } else {
-              formattedHtml += `<br>` + line;
-            }
+            formattedHtml += `<br>` + line;
           });
           document.getElementById('deactiveMsgBody').innerHTML = formattedHtml;
         }
+
+        // IF B4:B10 HAS LINK, SHOW GLOWING BUTTON
+        if (data.deactiveLink && data.deactiveLink.trim() !== "") {
+          btnArea.innerHTML = `<a href="${data.deactiveLink}" target="_blank" class="btn-glowing-link">Click Here For Open New App</a>`;
+        } else {
+          btnArea.innerHTML = "";
+        }
+
         modal.style.display = 'flex';
         return;
       } else {
