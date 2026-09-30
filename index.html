@@ -27,6 +27,72 @@
       padding: 8px 6px 30px 6px;
     }
 
+    /* FULL SCREEN MOBILE DEACTIVE MODAL OVERLAY */
+    #fullScreenDeactiveModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #07142b;
+      z-index: 9999999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .deactive-modal-box {
+      background: #000000;
+      border: 3px solid #ef4444;
+      border-radius: 16px;
+      padding: 24px 20px;
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 0 40px rgba(239, 68, 68, 0.6);
+    }
+
+    .deactive-modal-box h3 {
+      color: #ef4444;
+      font-size: 20px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .deactive-msg-content {
+      color: #ffff00;
+      font-size: 15px;
+      font-weight: bold;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+
+    .deactive-msg-content a {
+      color: #38bdf8;
+      text-decoration: underline;
+    }
+
+    .btn-deactive-ok {
+      width: 100%;
+      background: linear-gradient(90deg, #dc2626, #b91c1c);
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 900;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-transform: uppercase;
+      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+    }
+
     /* DEEP NAVY SPLASH SCREEN MATCHING YOUR LOGO */
     #splashScreen {
       position: fixed;
@@ -155,7 +221,6 @@
       cursor: pointer;
     }
 
-    /* EXTRA LARGE HIGH-VISIBILITY WHATSAPP BUTTON */
     .whatsapp-btn {
       background: #25D366;
       color: #ffffff;
@@ -359,7 +424,6 @@
       border: 1px solid #ef4444;
     }
 
-    /* HIGH-VISIBILITY PULSING COUNTDOWN BADGE */
     .animated-countdown-badge {
       background-color: #facc15 !important;
       color: #000000 !important;
@@ -380,12 +444,6 @@
       0%   { transform: scale(1); box-shadow: 0 0 6px rgba(250, 204, 21, 0.6); }
       50%  { transform: scale(1.14); box-shadow: 0 0 20px rgba(250, 204, 21, 1); }
       100% { transform: scale(1); box-shadow: 0 0 6px rgba(250, 204, 21, 0.6); }
-    }
-
-    @-webkit-keyframes badgePulse {
-      0%   { -webkit-transform: scale(1); box-shadow: 0 0 6px rgba(250, 204, 21, 0.6); }
-      50%  { -webkit-transform: scale(1.14); box-shadow: 0 0 20px rgba(250, 204, 21, 1); }
-      100% { -webkit-transform: scale(1); box-shadow: 0 0 6px rgba(250, 204, 21, 0.6); }
     }
 
     .relay-cards-grid {
@@ -418,6 +476,17 @@
   </style>
 </head>
 <body>
+
+  <!-- FULL SCREEN MOBILE DEACTIVE NOTIFICATION MODAL -->
+  <div id="fullScreenDeactiveModal">
+    <div class="deactive-modal-box">
+      <h3>⚠️ NOTICE</h3>
+      <div id="deactiveMsgBody" class="deactive-msg-content">
+        Please follow new app. This app is temporarily stopped.
+      </div>
+      <button class="btn-deactive-ok" onclick="exitOrBackApp()">OK</button>
+    </div>
+  </div>
 
   <!-- Custom Themed Splash Screen -->
   <div id="splashScreen">
@@ -476,8 +545,43 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwd5t7mrO4c3FffIxgVi_XoCBaO6eTbGnhTiHOtDgZpUy8uLk9195KSqIpg1dFGIHPP/exec";
     let globalWhatsAppText = "";
 
+    function exitOrBackApp() {
+      try {
+        window.close();
+      } catch (e) {}
+      try {
+        window.location.href = "about:blank";
+      } catch (e) {}
+    }
+
     window.handleDutyData = function(data) {
       if (!data) return;
+
+      const splash = document.getElementById('splashScreen');
+      setTimeout(() => {
+        splash.style.opacity = '0';
+        setTimeout(() => { splash.style.display = 'none'; }, 400);
+      }, 400);
+
+      // CHECK IF APP IS DEACTIVE
+      const modal = document.getElementById('fullScreenDeactiveModal');
+      if (data.appStatus && data.appStatus.toLowerCase() === "deactive") {
+        if (data.deactiveMessages && data.deactiveMessages.length > 0) {
+          let formattedHtml = "";
+          data.deactiveMessages.forEach(line => {
+            if (line.startsWith("http://") || line.startsWith("https://")) {
+              formattedHtml += `<br><a href="${line}" target="_blank">${line}</a>`;
+            } else {
+              formattedHtml += `<br>` + line;
+            }
+          });
+          document.getElementById('deactiveMsgBody').innerHTML = formattedHtml;
+        }
+        modal.style.display = 'flex';
+        return;
+      } else {
+        modal.style.display = 'none';
+      }
 
       document.getElementById('uiMainTitle').innerText = data.mainTitle || 'DAILY OPERATOR DUTY LINEUP';
       document.getElementById('uiRefreshed').innerText = 'LIVE | ' + (data.refreshed || '');
@@ -534,12 +638,6 @@
         holHeader.style.display = 'none';
         holWrapper.innerHTML = '';
       }
-
-      const splash = document.getElementById('splashScreen');
-      setTimeout(() => {
-        splash.style.opacity = '0';
-        setTimeout(() => { splash.style.display = 'none'; }, 400);
-      }, 400);
     };
 
     function loadSheetData() {
