@@ -595,7 +595,9 @@
         if (data.deactiveMessages && data.deactiveMessages.length > 0) {
           let formattedHtml = "";
           data.deactiveMessages.forEach(line => {
-            formattedHtml += `<br>` + line;
+            // AUTOMATICALLY DETECT URL IN A4:A10 AND MAKE IT CLICKABLE
+            let processedLine = line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+            formattedHtml += `<br>` + processedLine;
           });
           document.getElementById('deactiveMsgBody').innerHTML = formattedHtml;
         }
